@@ -1,0 +1,861 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Spring注解驱动 | Year 21's Blog</title><meta name="keywords" content="Redis缓存"><meta name="author" content="Year 21"><meta name="copyright" content="Year 21"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Spring注解驱动容器AnnotationConfigApplicationContext本质与xml文件一样，只不过是使用大量注解替代了xml文件的编写  使用配置类代替xml配置文件  12345678910111213@Configuration  &#x2F;&#x2F;告诉Spring这是一个配置类&#x2F;&#x2F;扫描sring包下的组件,且排除类型为Controller的注解，不加入此容器@ComponentSca">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring注解驱动">
+<meta property="og:url" content="http://xxxccc1986.github.io/2022/05/09/SpringByAnnotation/index.html">
+<meta property="og:site_name" content="Year 21&#39;s Blog">
+<meta property="og:description" content="Spring注解驱动容器AnnotationConfigApplicationContext本质与xml文件一样，只不过是使用大量注解替代了xml文件的编写  使用配置类代替xml配置文件  12345678910111213@Configuration  &#x2F;&#x2F;告诉Spring这是一个配置类&#x2F;&#x2F;扫描sring包下的组件,且排除类型为Controller的注解，不加入此容器@ComponentSca">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://w.wallhaven.cc/full/72/wallhaven-7278dy.jpg">
+<meta property="article:published_time" content="2022-05-09T12:39:02.000Z">
+<meta property="article:modified_time" content="2022-05-09T12:39:02.000Z">
+<meta property="article:author" content="Year 21">
+<meta property="article:tag" content="Annotation">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://w.wallhaven.cc/full/72/wallhaven-7278dy.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://xxxccc1986.github.io/2022/05/09/SpringByAnnotation/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: Year 21","link":"链接: ","source":"来源: Year 21's Blog","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'mediumZoom',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#2d3035","position":"bottom-left"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Spring注解驱动',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2022-05-09 20:39:02'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.1.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s4.ax1x.com/2022/01/18/7BWTQx.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data is-center"><div class="data-item"><a href="/archives/"><div class="headline">文章</div><div class="length-num">17</div></a></div><div class="data-item"><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a></div><div class="data-item"><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 其他</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://w.wallhaven.cc/full/72/wallhaven-7278dy.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Year 21's Blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 其他</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Spring注解驱动</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-05-09T12:39:02.000Z" title="发表于 2022-05-09 20:39:02">2022-05-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-05-09T12:39:02.000Z" title="更新于 2022-05-09 20:39:02">2022-05-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%A1%86%E6%9E%B6/">框架</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">10.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>37分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Spring注解驱动"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="Spring注解驱动"><a href="#Spring注解驱动" class="headerlink" title="Spring注解驱动"></a>Spring注解驱动</h1><h2 id="容器"><a href="#容器" class="headerlink" title="容器"></a>容器</h2><h3 id="AnnotationConfigApplicationContext"><a href="#AnnotationConfigApplicationContext" class="headerlink" title="AnnotationConfigApplicationContext"></a>AnnotationConfigApplicationContext</h3><p><font color="red"><strong>本质与xml文件一样，只不过是使用大量注解替代了xml文件的编写</strong></font></p>
+<ul>
+<li>使用配置类代替xml配置文件</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span>  <span class="comment">//告诉Spring这是一个配置类</span></span><br><span class="line"><span class="comment">//扫描sring包下的组件,且排除类型为Controller的注解，不加入此容器</span></span><br><span class="line"><span class="meta">@ComponentScan(basePackages = &quot;spring&quot;,includeFilters = &#123;  </span></span><br><span class="line"><span class="meta">    	@ComponentScan.Filter(type = FilterType.ANNOTATION,</span></span><br><span class="line"><span class="meta">                              classes =&#123;Controller.class&#125;)&#125;)</span> </span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SpringConfig</span> &#123;</span><br><span class="line">    <span class="meta">@Bean(&quot;person&quot;)</span></span><br><span class="line">    <span class="comment">//将此方法生成的对象交给spring的IOC容器进行管理</span></span><br><span class="line">    <span class="comment">//对象类型为方法的返回值类型，默认是使用方法名作为id的标识</span></span><br><span class="line">    <span class="keyword">public</span>  Person <span class="title function_">getPerson01</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;张三&quot;</span>,<span class="number">18</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>测试配置类是否加载成功：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testPerson</span><span class="params">()</span>&#123;</span><br><span class="line">    <span class="comment">//加载配置类完成Spring容器的初始化</span></span><br><span class="line">    <span class="type">ApplicationContext</span> <span class="variable">context</span>  <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AnnotationConfigApplicationContext</span>(SpringConfig.class);</span><br><span class="line">    <span class="comment">//获取在Spring容器中已初始化完成指定类型的bean</span></span><br><span class="line">    <span class="type">Person</span> <span class="variable">p</span> <span class="operator">=</span> context.getBean(Person.class);</span><br><span class="line">    System.out.println(p.toString());</span><br><span class="line">    <span class="comment">//获取指定类型的对象名字</span></span><br><span class="line">    String[] type = context.getBeanNamesForType(Person.class);</span><br><span class="line">    System.out.println(Arrays.toString(type));</span><br><span class="line">    <span class="comment">//获取Spring容器中定义的所有JavaBean 的名称</span></span><br><span class="line">    String[] names = context.getBeanDefinitionNames();</span><br><span class="line">    <span class="keyword">for</span>(String name : names)&#123;</span><br><span class="line">        System.out.println(name);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>扫描包</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">扫描包的设置</th>
+<th align="left">部分属性说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">basePackages</td>
+<td align="left">制定扫描哪个包下的组件</td>
+</tr>
+<tr>
+<td align="left">excludeFilters</td>
+<td align="left">按照规则排除扫描哪些类型的组件,不需要加use-default-filters&#x3D;false，否则扫描不到service和dao层组件</td>
+</tr>
+<tr>
+<td align="left">includeFilters</td>
+<td align="left">按照规则指定扫描哪些类型的组件,需要加use-default-filters&#x3D;false</td>
+</tr>
+<tr>
+<td align="left">FilterType.ANNOTATION</td>
+<td align="left">按照注解进行扫描</td>
+</tr>
+<tr>
+<td align="left">FilterType.ASSIGNABLE_TYPE</td>
+<td align="left">按照给定的类型扫描</td>
+</tr>
+<tr>
+<td align="left">FilterType.ASPECTJ</td>
+<td align="left">使用ASPECTJ表达式，使用较少</td>
+</tr>
+<tr>
+<td align="left">FilterType.REGEX</td>
+<td align="left">使用正则表达式匹配</td>
+</tr>
+<tr>
+<td align="left">FilterType.CUSTOM</td>
+<td align="left">使用自定义的规则</td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span>  <span class="comment">//告诉Spring这是一个配置类</span></span><br><span class="line"><span class="meta">@ComponentScan(basePackages = &quot;spring&quot;,excludeFilters = &#123;</span></span><br><span class="line"><span class="meta">                //指定排除类型为Controller的注解, 类型为BookServiceImpl的类，不加入此容器</span></span><br><span class="line"><span class="meta">//                @ComponentScan.Filter(type = FilterType.ANNOTATION,classes = &#123;Controller.class&#125;),</span></span><br><span class="line"><span class="meta">//                @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,classes = &#123;BookServiceImpl.class&#125;),</span></span><br><span class="line"><span class="meta">                @ComponentScan.Filter(type = FilterType.CUSTOM,classes = &#123;MyTypeFilter.class&#125;)</span></span><br><span class="line"><span class="meta">&#125;,useDefaultFilters = false)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SpringConfig</span> &#123;</span><br><span class="line">    <span class="meta">@Bean(&quot;person&quot;)</span></span><br><span class="line">    <span class="keyword">public</span>  Person <span class="title function_">getPerson01</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;张三&quot;</span>,<span class="number">18</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>自定义规则的的演示：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyTypeFilter</span> <span class="keyword">implements</span> <span class="title class_">TypeFilter</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Description : TODO</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@date</span> 2022/4/27</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> metadataReader 读取当前正在扫描的类的信息</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> metadataReaderFactory 可以获取其他任何类的信息</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> boolean</span></span><br><span class="line"><span class="comment">     **/</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">match</span><span class="params">(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">//获取当前类的注解信息</span></span><br><span class="line">        <span class="type">AnnotationMetadata</span> <span class="variable">annotationMetadata</span> <span class="operator">=</span> metadataReader.getAnnotationMetadata();</span><br><span class="line">        <span class="comment">//获取当前正在扫描的类的信息</span></span><br><span class="line">        <span class="type">ClassMetadata</span> <span class="variable">classMetadata</span> <span class="operator">=</span> metadataReader.getClassMetadata();</span><br><span class="line">        <span class="comment">//获取当前类资源(比如类的路径等)</span></span><br><span class="line">        <span class="type">Resource</span> <span class="variable">resource</span> <span class="operator">=</span> metadataReader.getResource();</span><br><span class="line">        <span class="comment">//获取当前类名</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">className</span> <span class="operator">=</span> classMetadata.getClassName();</span><br><span class="line">        System.out.println(<span class="string">&quot;类名是：&quot;</span> + className);</span><br><span class="line">        <span class="comment">//只要在指定扫描包下的都会进入这个规则的进行匹配，当类名中包含er就会被ioc容器收纳进行管理</span></span><br><span class="line">        <span class="keyword">if</span> (className.contains(<span class="string">&quot;er&quot;</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="组件添加"><a href="#组件添加" class="headerlink" title="组件添加"></a>组件添加</h3><p><font color="red"><strong>组件也是抽象的概念,可以理解为一些符合某种规范的类组合在一起就构成了组件。</strong></font></p>
+<p>@ComponentScan 扫描指定的包路径下的组件</p>
+<p>@Configuration  告诉Spring这是一个配置类</p>
+<p>@Scope 标明Bean的作用域</p>
+<ul>
+<li>Scope注解值的4种不同情况：</li>
+</ul>
+<p>​		prototype：多实例，每次在调用 getBean 方法时候创建多实例对象</p>
+<p>​		singleton：单实例(@Scope的默认值)：在加载完spring配置文件自动创建并放入ioc容器中</p>
+<p>​		request：同一次请求创建一个实例</p>
+<p>​		session：同一个session创建一个实例</p>
+<p>@Lazy   表示延迟加载懒加载，可与@Scope搭配使用，表示在单实例的情况下，在调用getBean的方法时加载Bean对象</p>
+<p>@Conditional({Condition接口实现类}) 按照一定的条件进行判断，符合条件创建其对象并加入IOC容器中进行管理</p>
+<ul>
+<li><p>Conditional注解可以使用在类或者方法上</p>
+<p>①使用<font color="red"><strong>在方法</strong></font>：表示这个方法返回的对象bean满足某个Condition接口实现类重写方法的条件才会注册到ioc容器中</p>
+<p>②使用<font color="red"><strong>在类上</strong></font>：表示这个类中配置的所有bean满足某个Condition接口实现类重写方法的条件才会注册到ioc容器中</p>
+</li>
+</ul>
+<p>@Import 快速给容器中导入组件 </p>
+<ul>
+<li><p>@Import的三种用法</p>
+<p>①@Import(要导入到容器中的组件)  容器中会自动创建该类的对象并进行管理，id默认是全类名</p>
+<p>②ImportSelector接口的实现类重写方法：返回需要导入的组件的全类名String数组</p>
+<p>③ImportBeanDefinitionRegistrar接口的实现类重写方法：手动注册bean到容器中</p>
+</li>
+</ul>
+<p>给容器中注册组件的方式：</p>
+<p>①包扫描+组件标注注解(@Controller&#x2F;@Service…)[自己写的类]</p>
+<p>②@Bean[导入第三方包的组件]</p>
+<p>③@Import[快速给容器中导入组件] </p>
+<p>④使用Spring提供的FactoryBean(工厂bean)</p>
+<ul>
+<li><p>两种情况：</p>
+<p>①默认获取到的工厂bean调用getObject创建的对象</p>
+<p>②获取工厂Bean本身需要在id前面添加&amp;，id不设置默认为其类名小写</p>
+<p><font color="red"><strong>注：在Spring整合其他框架大部分都是使用了Spring提供的FactoryBean</strong></font></p>
+</li>
+</ul>
+<h4 id="Baen的生命周期"><a href="#Baen的生命周期" class="headerlink" title="Baen的生命周期"></a>Baen的生命周期</h4><ul>
+<li><p>①<font color='red'><strong>构造(对象创建)</strong></font></p>
+<p>单实例：在容器启动的时候创建对象</p>
+<p>多实例：在每次调用getBean方法时候创建</p>
+</li>
+<li><p>②对象实例化，即完成依赖注入或属性赋值。</p>
+<p>注：很<font color='red'><strong>重要</strong></font>的一点：<font color='red'><strong>后置处理器的方法执行一定是发生在<font color='green'>对象实例化(对象创建)和各种属性完成赋值</font>以后，</strong></font></p>
+<p><font color='red'><strong>在显示调用初始化方法的前后添加自己的逻辑代码</strong></font></p>
+</li>
+<li><p>③后置处理器 <font color='red'><strong>postProcessBeforeInitialization方法</strong></font></p>
+</li>
+<li><p>④<font color='red'><strong>初始化：在对象创建并完成赋值后，调用初始化方法</strong></font></p>
+</li>
+<li><p>⑤后置处理器<font color='red'> <strong>postProcessAfterInitialization方法</strong></font></p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>();<span class="comment">//传入配置类，创建ioc容器</span></span><br><span class="line">register(annotatedClasses);<span class="comment">//注册配置类到ioc容器中</span></span><br><span class="line">refresh();<span class="comment">//refresh()方法对容器进行刷新。spring容器的启动，创建bean，bean的初始化等一系列过程都在这个refresh方法里面</span></span><br><span class="line"></span><br><span class="line">finishBeanFactoryInitialization(beanFactory);<span class="comment">//实例化所有的（非懒加载的）单实例bean对象</span></span><br><span class="line"></span><br><span class="line">beanFactory.preInstantiateSingletons();<span class="comment">//在这个方法里面遍历beanDefinitionNames并调用其的getBean(beanName)方法</span></span><br><span class="line"></span><br><span class="line">getBean(beanName)<span class="comment">//被下方方法重写</span></span><br><span class="line"></span><br><span class="line">getBean(String name);<span class="comment">//这个方法内部调用了doGetBean方法</span></span><br><span class="line"></span><br><span class="line">doGetBean&#123; <span class="comment">//doGetBean方法内部调用getSingleton方法</span></span><br><span class="line">    </span><br><span class="line">getSingleton(</span><br><span class="line"><span class="comment">//进入后首先:尝试从缓存中缓存保存的单实例Bean，如果能获取到说明这个bean已被创建过，所有被创建的bean都会放到缓存中</span></span><br><span class="line">Object singletonObject=<span class="built_in">this</span>.singletonObjects.get(beanName);</span><br><span class="line">    </span><br><span class="line"><span class="comment">//此时因为是第一次调用,所以singletonObject为null,即缓存中获取不到对象，开始创建对象的过程    </span></span><br><span class="line"><span class="keyword">if</span> (!typeCheckOnly) &#123;</span><br><span class="line">				markBeanAsCreated(beanName);<span class="comment">//该方法会将此beanName标志成&quot;正在创建中&quot;</span></span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//获取Bean的定义信息</span></span><br><span class="line"><span class="keyword">final</span> <span class="type">RootBeanDefinition</span> <span class="variable">mbd</span> <span class="operator">=</span> getMergedLocalBeanDefinition(beanName);</span><br><span class="line">    </span><br><span class="line"><span class="comment">//获取当前Bean依赖的其他bean，确保当前bean依赖的其他bean已经创建完成</span></span><br><span class="line">String[] dependsOn = mbd.getDependsOn();</span><br><span class="line"><span class="comment">//如果存在其他依赖的bean则使用下面方法进行创建</span></span><br><span class="line">registerDependentBean(dep, beanName);</span><br><span class="line">getBean(dep);</span><br><span class="line">    </span><br><span class="line"><span class="comment">//若不存在依赖的bean则判断这个bean是否为单实例，是则开始创建对象</span></span><br><span class="line"><span class="keyword">if</span> (mbd.isSingleton()) &#123;    </span><br><span class="line">		sharedInstance = getSingleton(beanName, <span class="keyword">new</span> <span class="title class_">ObjectFactory</span>&lt;Object&gt;() &#123;</span><br><span class="line">		<span class="meta">@Override</span> <span class="comment">//重写了ObjectFactory接口的getObject()方法</span></span><br><span class="line">		<span class="keyword">public</span> Object <span class="title function_">getObject</span><span class="params">()</span> <span class="keyword">throws</span> BeansException &#123;<span class="comment">//</span></span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> createBean(beanName, mbd, args);<span class="comment">//是则调用这个方法创建对象</span></span><br><span class="line">		&#125;			</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//进入createBean(beanName, mbd, args)方法</span></span><br><span class="line"><span class="comment">//尝试InstantiationAwareBeanPostProcessor后置处理器提前执行进行拦截尝试创建一个代理对象</span></span><br><span class="line"><span class="comment">//在resolveBeforeInstantiation方法里，先执行postProcessBeforeInstantiation() </span></span><br><span class="line"><span class="comment">//如果有返回值，再执行postProcessAfterInitialization() 注意这里的两个方法不是同一个接口中的抽象方法           </span></span><br><span class="line"><span class="type">Object</span> <span class="variable">bean</span> <span class="operator">=</span> resolveBeforeInstantiation(beanName, mbdToUse); </span><br><span class="line">         </span><br><span class="line"><span class="comment">//没有返回代理对象则开始执行这个方法，这里开始创建一个真正的bean实例           </span></span><br><span class="line">doCreateBean(</span><br><span class="line"><span class="keyword">if</span> (instanceWrapper == <span class="literal">null</span>) &#123;</span><br><span class="line">	instanceWrapper = createBeanInstance(beanName, mbd, args);<span class="comment">//这里创建当前实例对象并返回给下方方法使用</span></span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line"><span class="comment">//在这个方法中利用工厂方法或者对象的构造器完成了bean实例的创建</span></span><br><span class="line">createBeanInstance(beanName, mbd, args);</span><br><span class="line"></span><br><span class="line"><span class="comment">//将上面创建好的bean单实例对象再次进行包装返回</span></span><br><span class="line"><span class="keyword">final</span> <span class="type">Object</span> <span class="variable">bean</span> <span class="operator">=</span> (instanceWrapper != <span class="literal">null</span> ? instanceWrapper.getWrappedInstance() : <span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//这个部分不一定发生 仅仅是提供对bean的定义进行修改的功能    </span></span><br><span class="line"><span class="comment">// Allow post-processors to modify the merged bean definition.</span></span><br><span class="line"><span class="comment">//调用MergedBeanDefinitionPostProcessors的对应处理器方法</span></span><br><span class="line">applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);</span><br><span class="line"></span><br><span class="line"><span class="comment">//这个部分不一定发生    </span></span><br><span class="line"><span class="comment">//可以解决创建对象的循环依赖问题</span></span><br><span class="line"><span class="keyword">if</span> (earlySingletonExposure) &#123;<span class="comment">//判断当前beanDefinition是否是单例且是允许提前暴露引用且是正在被创建,</span></span><br><span class="line">    <span class="comment">//满足条件则调用getEarlyBeanReference方法</span></span><br><span class="line">	addSingletonFactory(beanName, <span class="keyword">new</span> <span class="title class_">ObjectFactory</span>&lt;Object&gt;() &#123;</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="keyword">public</span> Object <span class="title function_">getObject</span><span class="params">()</span> <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line">		<span class="keyword">return</span> getEarlyBeanReference(beanName, mbd, bean);<span class="comment">//返回exposedObject对象，实际上为正在被的对象</span></span><br><span class="line">		&#125;</span><br><span class="line">&#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//对bean对象属性进行赋值，相当于Bean的生命周期第二步    </span></span><br><span class="line">populateBean(beanName, mbd, instanceWrapper)&#123;</span><br><span class="line"><span class="comment">//而在这个方法里面，在赋值之前 先获取了属于InstantiationAwareBeanPostProcesso的后置处理器</span></span><br><span class="line"><span class="comment">//并执行了这个处理器的postProcessAfterInstantiation()方法</span></span><br><span class="line">    <span class="keyword">if</span> (!mbd.isSynthetic() &amp;&amp; hasInstantiationAwareBeanPostProcessors()) &#123;</span><br><span class="line">		<span class="keyword">for</span> (BeanPostProcessor bp : getBeanPostProcessors()) &#123;</span><br><span class="line">		<span class="keyword">if</span> (bp <span class="keyword">instanceof</span> InstantiationAwareBeanPostProcessor) &#123;</span><br><span class="line">		<span class="type">InstantiationAwareBeanPostProcessor</span> <span class="variable">ibp</span> <span class="operator">=</span> (InstantiationAwareBeanPostProcessor) bp;</span><br><span class="line">		<span class="keyword">if</span> (!ibp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) &#123;</span><br><span class="line">		continueWithPropertyPopulation = <span class="literal">false</span>;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">                </span><br><span class="line"><span class="comment">//再次获取了属于InstantiationAwareBeanPostProcessor的后置处理器</span></span><br><span class="line"><span class="comment">//并执行了这个处理器的postProcessPropertyValues()方法 </span></span><br><span class="line"><span class="keyword">if</span> (hasInstAwareBpps) &#123;</span><br><span class="line">		<span class="keyword">for</span> (BeanPostProcessor bp : getBeanPostProcessors()) &#123;</span><br><span class="line">		<span class="keyword">if</span> (bp <span class="keyword">instanceof</span> InstantiationAwareBeanPostProcessor) &#123;</span><br><span class="line">		<span class="type">InstantiationAwareBeanPostProcessor</span> <span class="variable">ibp</span> <span class="operator">=</span> (InstantiationAwareBeanPostProcessor) bp;</span><br><span class="line">			pvs = ibp.postProcessPropertyValues(pvs, filteredPds,bw.getWrappedInstance(),beanName);</span><br><span class="line">			<span class="keyword">if</span> (pvs == <span class="literal">null</span>) &#123;</span><br><span class="line">				<span class="keyword">return</span>;</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125; </span><br><span class="line">            </span><br><span class="line"><span class="comment">//这一步才真正应用Bean属性的值，上面的步骤都发生在赋值之前：为属性利用setter方法等进行赋值</span></span><br><span class="line">applyPropertyValues(beanName, mbd, bw, pvs);          </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//后置处理器的两个方法和调用的初始化方法都是在这个initialzeBean中完成的</span></span><br><span class="line">exposedObject = initializeBean(beanName, exposedObject, mbd)&#123;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//执行实现了aware接口的方法    </span></span><br><span class="line">invokeAwareMethods(beanName, bean);  </span><br><span class="line">    </span><br><span class="line"><span class="comment">//遍历得到容器中所有的BeanPostProcessor：挨个执行BeforeInitialization，一旦返回null，不再执行后续的，跳出循环</span></span><br><span class="line">applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName)<span class="comment">//后置处理器的before方法</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//执行@PostConstruct注解标识的，InitializingBean接口实现类等自定义的初始化方法    </span></span><br><span class="line">invokeInitMethods(beanName, wrappedBean, mbd);</span><br><span class="line">    </span><br><span class="line"><span class="comment">//bean后置处理器的after方法，里面的执行流程和bean后置处理器的before方法差不多的执行流程</span></span><br><span class="line">applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName)</span><br><span class="line">&#125;;</span><br><span class="line">)</span><br><span class="line">    </span><br><span class="line"><span class="comment">//在bean单实例对象实例化和初始化完成之后注册bean的销毁方法</span></span><br><span class="line">registerDisposableBeanIfNecessary(beanName, bean, mbd); </span><br><span class="line">        </span><br><span class="line"><span class="comment">//在doCreateBean()方法执行完成后就创建了bean对象</span></span><br><span class="line"><span class="comment">//通过下面的方法将这个bean添加到SingletonObjects缓存中        </span></span><br><span class="line">addSingleton(beanName, singletonObject); </span><br><span class="line">        </span><br><span class="line"><span class="comment">//在所有的Bean都利用getBean创建完成之后</span></span><br><span class="line"><span class="comment">//再通过遍历每一个bean的名字判断bean是否符合SmartInitializingSingleton接口的</span></span><br><span class="line"><span class="comment">//符合则执行下方的afterSingletonsInstantiated()方法       </span></span><br><span class="line"><span class="keyword">if</span> (singletonInstance <span class="keyword">instanceof</span> SmartInitializingSingleton) &#123;</span><br><span class="line"><span class="keyword">final</span> <span class="type">SmartInitializingSingleton</span> <span class="variable">smartSingleton</span> <span class="operator">=</span> (SmartInitializingSingleton) singletonInstance;    </span><br><span class="line">smartSingleton.afterSingletonsInstantiated();    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>⑥获得对象</p>
+</li>
+<li><p>⑦**<font color='red'>销毁</font>：**</p>
+<p>单实例bean在容器关闭之后调用销毁方法</p>
+<p>多实例bean，容器并不会管理这个bean，只负责创建bean，因此不会调用销毁方法</p>
+</li>
+</ul>
+<p>2.指定初始化和销毁方法的方式:</p>
+<p>​	①通过@Bean注解的属性值指定init-method和destory-method</p>
+<p>​	②通过Bean实现InitializingBean接口(定义初始化逻辑)，DisposableBean接口(定义销毁逻辑)</p>
+<p>​	③使用JSR250</p>
+<p>​		通过@PostConstruct注解，在bean创建和属性赋值完成后进行初始化方法</p>
+<p>​		通过@PreDestroy注解，在容器对进行bean销毁之前执行销毁方法</p>
+<p>​	④使用BeanPostProcessor接口：bean的后置处理器</p>
+<p>​		在bean初始化前后进行一些处理操作</p>
+<p>​		postProcessBeforeInitialization：在初始化方法之前调用</p>
+<p>​		postProcessAfterInitialization：在初始化方法之后调用</p>
+<p>3.BeanPostProcessor在Spring底层的使用</p>
+<p><font color='red'><strong>bean赋值，注入其他组件，@Autowired，生命周期注解功能，@Async等等都是使用BeanPostProcessor完成的</strong></font></p>
+<p>①ApplicationContextAwareProcessor 后置处理器的作用：</p>
+<p>​	当应用程序定义的Bean实现ApplicationContextAware接口时注入ApplicationContext对象。</p>
+<p>②BeanValidationPostProcessor 后置处理器的作用：常用于做数据校验</p>
+<p>③InstantiationAwareBeanPostProcessor 后置处理器的作用：</p>
+<p>​	用于处理@PostConstruct和@PerDestroy注解等</p>
+<hr>
+<h3 id="组件赋值"><a href="#组件赋值" class="headerlink" title="组件赋值"></a>组件赋值</h3><ul>
+<li><p>1.使用@Value赋值</p>
+<p>①基本的数值</p>
+<p>②可以写SpEL，#{}</p>
+<p>③可以写${},取出配置文件properties中的值</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//使用@PropertySource读取外部配置文件中key和value保存到运行的环境变量中</span></span><br><span class="line"><span class="comment">//加载完外部的配置文件以后再使用$&#123;&#125;取出配置文件的值</span></span><br><span class="line"><span class="meta">@PropertySource(&quot;classpath:/person.properties&quot;)</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SpringConfig3</span> &#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> Person <span class="title function_">person</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Person</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Value(&quot;test&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="meta">@Value(&quot;#&#123;20-2&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> age;</span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;person.email&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String email;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>2.使用@Autowired注入</p>
+<p>①默认优先按照类型取容器中找对应的组件context.getBean(BookService.class)</p>
+<p>②如果找到多个相同类型的值，再将属性的名称作为组件的id去容器中查找</p>
+<p>③@Qualifier(“bookDao2”)，使用@Qualifier指定需要装配的组件的id，而不是使用属性名</p>
+<p>④使用自动装配则要求容器内必须有这个组件，否则报错，但可以使用@Autowired(require&#x3D;false)来避免报错</p>
+<p>⑤@Primary，让spring自动装配时默认使用首选的bean，也可以继续使用@Qualifier指定装配哪个</p>
+</li>
+</ul>
+<p> 以上都是Spring支持的注解，Spring还支持使用@Resource(JSR250)和Inject(JSR303)[java规范的注解]</p>
+<p>​		@Resource：可以和@Autowired一样实现自动装配，但是默认使用组件名称进行装配的</p>
+<p>​								但不支持@Primary注解和@Autowired(require&#x3D;false)</p>
+<p>​		 @Inject：需要导入依赖，和Autowired功能一样，但也没有require&#x3D;false的属性</p>
+<p><font color='red'><strong>关于@Autowired的补充：</strong></font></p>
+<p>@Autowired注解可以使用在方法上、构造器上、属性上、参数上，但都是从容器中获取参数组件的值</p>
+<p>使用在方法上：@Bean+方法参数，从容器中获取，默认省略@Autowired</p>
+<p>使用在构造器上：如果组件内只有一个有参构造器，这个有参构造器的@Autowired可以省略</p>
+<p>使用在参数上：也可以省略@Autowired，默认从容器中获取组件的值</p>
+<ul>
+<li><p>3.自定义组件想要使用Spring容器底层的一些组件需要实现xxxAware：</p>
+<p>​	<font color='red'><strong>自定义组件实现xxxAware</strong></font>：在创建对象的时候，会调用接口规定的方法注入相关的组件：Aware</p>
+</li>
+</ul>
+<p>​	<font color='red'>		<strong>作用是：可以把Spring底层的一些组件注入到自己定义的bean中去，而这些bean之所以能注入都是使用了相应的xxxProcessor</strong></font></p>
+<p>​			例如：ApplicationContextAware &#x3D;&#x3D;&gt; ApplicationContextAwareProcessor</p>
+<ul>
+<li><p>4.Profile：Spring提供的根据不同环境：动态的激活和切换一系列的组件功能</p>
+<p>@Profile：指定组件在那个环境的情况下才能被注册到容器中，不指定则在任何环境下都能注册这些组件</p>
+<p><font color='red'><strong>方法上加了环境标识的bean，只有在对应的环境下才能被注册到容器中，默认是default环境</strong></font></p>
+<p><font color='red'><strong>如果是写在类上,只有符合指定的环境，整个类中的bean才能注册到容器中</strong></font></p>
+<p><strong>如何切换数据源：</strong></p>
+<p>①使用命令行参数，在虚拟机参数位置设置：-Dspring.profiles.active&#x3D;对应环境的名称</p>
+</li>
+</ul>
+<p>​		②代码的方式</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">test</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="comment">//1.创建一个applicationContext对象</span></span><br><span class="line">        <span class="type">AnnotationConfigApplicationContext</span> <span class="variable">context</span> <span class="operator">=</span>  <span class="keyword">new</span> <span class="title class_">AnnotationConfigApplicationContext</span>();</span><br><span class="line">        <span class="comment">//2.在容器还没启动创建其他bean之前设置激活的环境，可以设置多个</span></span><br><span class="line">        context.getEnvironment().setActiveProfiles(<span class="string">&quot;dev&quot;</span>);</span><br><span class="line">        <span class="comment">//3.注册主配置类</span></span><br><span class="line">        context.register(ProfileConfig.class);</span><br><span class="line">        <span class="comment">//4.启动刷新容器</span></span><br><span class="line">        context.refresh();</span><br><span class="line"></span><br><span class="line">        String[] names = context.getBeanNamesForType(DataSource.class);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; names.length; i++) &#123;</span><br><span class="line">            System.out.println(names[i]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="AOP"><a href="#AOP" class="headerlink" title="AOP"></a>AOP</h3><p>1.通知类型：</p>
+<p>①前置通知(@Before)：在增强方法前执行</p>
+<p>②后置通知(@AfterReturning)：在增强方法后执行</p>
+<p>③环绕通知(@Around)：在增强方法前后分别执行</p>
+<p>④异常通知(@AfterThrowing)：在增强方法出现异常后执行</p>
+<p>⑤最终通知(@After)：无论增强方法怎么样，都会执行</p>
+<ul>
+<li>@After在方法调用之后执行</li>
+<li>@AfterReturning表示在返回值后面执行</li>
+</ul>
+<p>2.使用注解进行Aop操作的流程</p>
+<p>①创建<font color='red'><strong>被增强类，内部定义被增强的方法</strong>  </font></p>
+<p>②创建<font color='red'><strong>增强类，配置切入点表达式(execution)和各种通知</strong></font>，<font color='red'><strong>@Pointcut</strong></font>注解抽取相同切入点</p>
+<p>③将<font color='red'><strong>被增强类或增强类的加入ioc容器</strong></font></p>
+<p>④在增强类上设置注解<font color='red'><strong>@Aspsct</strong></font>，告诉Spring这是个切面类</p>
+<p>⑤在配置类上设置注解<font color='red'><strong>@EnableAspectJAutoProxy 开启基于注解的aop模式</strong> </font></p>
+<ul>
+<li>在Spring中很多的 @EnableXXX的注解，它的意思都是表示开启什么东西</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Aspect</span> <span class="comment">//告诉Spring这是一个切面类</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MathLogAop</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//抽取相同切入点</span></span><br><span class="line">    <span class="meta">@Pointcut(value = &quot;execution(public int spring.aop.Math.*(..))&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">point</span><span class="params">()</span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Before(&quot;point()&quot;)</span><span class="comment">//前置通知</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">showExecute</span><span class="params">(JoinPoint joinPoint)</span>&#123;<span class="comment">//joinPoint可以获取被执行的方法的各种信息</span></span><br><span class="line">        System.out.println(joinPoint.getSignature().getName() + <span class="string">&quot;业务方法被调用,参数是&quot;</span> + Arrays.asList(joinPoint.getArgs()));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//returning可以获取返回的参数值用方法形参里的result来接收</span></span><br><span class="line">    <span class="meta">@AfterReturning(value = &quot;point()&quot;,returning = &quot;result&quot;)</span><span class="comment">//后置通知</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">showExecuteReturn</span><span class="params">(JoinPoint joinPoint,Object result)</span>&#123;<span class="comment">//多参数时，JoinPoint必须在参数列表的第一位，否则报错</span></span><br><span class="line">        System.out.println(joinPoint.getSignature().getName() + <span class="string">&quot;业务方法正常执行,返回值是&quot;</span> + result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//throwing可以获取异常的信息用方法形参里的exception来接收</span></span><br><span class="line">    <span class="meta">@AfterThrowing(value = &quot;point()&quot;,throwing = &quot;exception&quot;)</span><span class="comment">//异常通知</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">showExecuteException</span><span class="params">(Exception exception)</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;业务方法出现异常，异常信息是&quot;</span> + exception);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@After(&quot;point()&quot;)</span><span class="comment">//最终通知，也叫返回通知</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">showExecuteEnd</span><span class="params">(JoinPoint joinPoint)</span>&#123;</span><br><span class="line">        System.out.println(joinPoint.getSignature().getName()+<span class="string">&quot;业务方法调用结束&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Aop实现的原理"><a href="#Aop实现的原理" class="headerlink" title="Aop实现的原理"></a>Aop实现的原理</h4><p>由@EnableAspectJAutoProxy注解快速导入AspectJAutoProxyRegistrar组件，</p>
+<p>此组件实现了ImportBeanDefinitionRegistrar接口，在重写的方法中通过调用</p>
+<p>registerAspectJAnnotationAutoProxyCreatorIfNecessary(registry)</p>
+<p>然后在这个方法定义了一个将注册的bean定义成了一个名为AnnotationAwareAspectJAutoProxyCreator的BeanDefinition，</p>
+<p>通过registerBeanDefinitions在容器中注册了一个beanName为internalAutoProxyCreator，类型是</p>
+<p>AnnotationAwareAspectJAutoProxyCreator的bean</p>
+<p><font color='red'><strong>总而言之，就是通过@EnableAspectJAutoProxy注解在ioc容器中注册了类型是AnnotationAwareAspectJAutoProxyCreator的后置处理器组件</strong></font></p>
+<p>这里的注册 Bean 是指将  Bean定义成BeanDefinition，之后放入Spring容器中，</p>
+<p>我们常说的容器其实就是 Beanfactory 中的一个 Map，key 是 Bean 的名称，value 是 Bean 对应的 BeanDefinition，</p>
+<ul>
+<li><p>AnnotationAwareAspectJAutoProxyCreator的继承树：</p>
+<p><font color='red'><strong>AnnotationAwareAspectJAutoProxyCreator</strong></font></p>
+<p>​	-&gt;extends  AspectJAwareAdvisorAutoProxyCreator</p>
+<p>​		-&gt;extends  AbstractAdvisorAutoProxyCreator</p>
+<p>​			-&gt;extends  AbstractAutoProxyCreator</p>
+<p>​				<font color='red'><strong>-&gt;implements SmartInstantiationAwareBeanPostProcessor, BeanFactoryAware</strong></font></p>
+</li>
+</ul>
+<p>​	<font color='red'><strong>因此只需要关注后置处理器（在bean初始化完成前后做的事情）、自动装配BeanFactory</strong></font></p>
+<h5 id="后置处理器的注册和创建"><a href="#后置处理器的注册和创建" class="headerlink" title="后置处理器的注册和创建"></a>后置处理器的注册和创建</h5><p>创建和注册AnnotationAwareAspectJAutoProxyCreator后置处理器的流程：</p>
+<p>​	①传入配置类，创建ioc容器</p>
+<p>​	②注册配置类，调用refresh()刷新容器</p>
+<p>​	③registerBeanPostProcessors(beanFactory);注册bean的后置处理器来拦截bean的创建		</p>
+<p>​			Ⅰ.先获取ioc容器已经定义了的需要创建对象的所有BeanPostProcessor</p>
+<p>​			Ⅱ.给容器中添加别的BeanPostProcessor</p>
+<p>​			Ⅲ.取得所有的后置处理器</p>
+<p>​			Ⅳ.按照类型匹配优先注册实现了PriorityOrdered接口的BeanPostProcessor</p>
+<p>​			Ⅴ.再注册实现了Ordered接口的BeanPostProcessor</p>
+<p>​			Ⅵ.最后注册所有常规的BeanPostProcessor</p>
+<p>​			Ⅶ.注册BeanPostProcessor，实际上就是在容器中创建BeanPostProcessor的对象</p>
+<p>​					创建定义名为internalAutoProxyCreator的BeanPostProcessor，类型是AnnotationAwareAspectJAutoProxyCreator</p>
+<p>​					创建Bean的实例(实例化AnnotationAwareAspectJAutoProxyCreator类型的bean)</p>
+<p>​					 populateBean(beanName, mbd, instanceWrapper); 给刚刚实例化完成的bean进行属性赋值</p>
+<p>​					 initializeBean(beanName, exposedObject, mbd); 对bean进行初始化</p>
+<p>​							invokeAwareMethods()；处理Aware接口的方法回调</p>
+<p>​							applyBeanPostProcessorsBeforeInitialization()：应用后置处理器的before方法</p>
+<p>​							invokeInitMethods()；执行自定义的初始化方法</p>
+<p>​							applyBeanPostProcessorsAfterInitialization()：应用后置处理器的After方法</p>
+<p>​					至此，BeanPostProcessor(AnnotationAwareAspectJAutoProxyCreator)创建成功</p>
+<p>​				Ⅷ.把BeanPostPrpcessor添加到BeanFactory中，beanFactory.addBeanPostPrpcessor(postProccessor)</p>
+<h5 id="后置处理器的执行时机"><a href="#后置处理器的执行时机" class="headerlink" title="后置处理器的执行时机"></a>后置处理器的执行时机</h5><ul>
+<li><font color='red'><strong>一句话概括：【在所有bean创建对象之前进行拦截判断是否能从缓存中直接返回一个代理对象，不能再开始创建对象】</strong></font></li>
+</ul>
+<p><font color='red'><strong>AnnotationAwareAspectJAutoProxyCreator后置处理器是这个类型的  &#x3D;&#x3D;&gt;  InstantiationAwareBeanPostProcessor，</strong></font></p>
+<p>因此后置处理器方法有所不同</p>
+<p>执行过程：</p>
+<p>1.遍历获取容器中已经定义好的所有bean的名字，依次创建对象；</p>
+<p>getBean() -&gt; doGetBean() -&gt; getSingleton()</p>
+<p>先从缓存中获取当前bean，如果能获取到，说明bean是已经创建了的，直接使用，否则进行创建</p>
+<p>2.createBean();	创建bean </p>
+<p><font color='red'><strong>【AnnotationAwareAspectJAutoProxyCreator会在任何bean创建之前进行先尝试返回bean的实例，</strong></font></p>
+<p><font color='red'><strong>会调用 postProcessBeforeInstantiation()】</strong></font></p>
+<p><font color='red'><strong>【InstantiationAwareBeanPostProcessor 是在bean对象实例化之前尝试用后置处理器返回对象，也就是创建对象之前进行调用】</strong></font></p>
+<p>①resolveBeforeInstantiation(beanName, mbdToUse)；解析BeforeBeforeInstantiation方法：</p>
+<p>希望后置处理器在此能返回一个代理对象，如果能返回就直接使用，</p>
+<p>在bean &#x3D; applyBeanPostProcessorsBeforeInstantiation(targetType, beanName)方法中</p>
+<p>获取所有的后置处理器，判断是否有属于InstantiationAwareBeanPostProcessor，有则执行</p>
+<p>postProcessBeforeInstantiation(beanClass, beanName);</p>
+<p>bean &#x3D; applyBeanPostProcessorsAfterInitialization(bean, beanName);</p>
+<p>不能就进行创建(即调用doCreateBean)</p>
+<p>②doCreateBean(beanName,mdbToUse,args);这才是真正创建bean的过程，和上面③.Ⅶ的流程差不多</p>
+<h5 id="后置处理器创建Aop代理对象"><a href="#后置处理器创建Aop代理对象" class="headerlink" title="后置处理器创建Aop代理对象"></a>后置处理器创建Aop代理对象</h5><ul>
+<li><p>在每一个bean创建之前都会被AnnotationAwareAspectJAutoProxyCreator拦截并调用其postProcessBeforeInstantiation方法</p>
+<p>目前只关心两个关键bean的创建：Math和MathLogAop</p>
+</li>
+</ul>
+<p>postProcessBeforeInstantiation方法：</p>
+<p>①判断当前bean是否在advisedBeans(这里面保存了所有需要被增强的bean)中</p>
+<p>②判断当前的bean是否是基础类型Advice、Pointcut、Advisor、AopInfrastructureBean接口的实现类或者是否是切面(@Aspect)</p>
+<p>③是否应该被跳过</p>
+<p>​		Ⅰ获取候选的增强器(增强类里面的通知方法) List<Advisor> candidateAdvisors</p>
+<p>​			Ⅰ每一个封装的增强器都是InstantiationModelAwarePointcutAdvisor；</p>
+<p>​			Ⅱ判断每一个增强器是否是AspectJPointcutAdvisor：是则返回true</p>
+<p>​		永远都返回false</p>
+<p>对象创建完成，调用下方的方法</p>
+<p>postProcessAfterInitialization方法：</p>
+<p>return wrapIfNecessary(bean, beanName, cacheKey);&#x2F;&#x2F;在需要包装的情况下返回</p>
+<p>①获取当前bean的所有增强器和增强方法 	</p>
+<p>​	Ⅰ找到候选的所有增强器(找那些通知方法是需要被应用的当前bean的)</p>
+<p>​	Ⅱ获取到能在bean使用的增强器</p>
+<p>​	Ⅲ给增强器排序</p>
+<p>②保存当前bean在advisedBeans中，this.advisedBeans.put(cacheKey, Boolean.TRUE);</p>
+<p>③如果当前bean需要被增强就创建代理对象  Object proxy &#x3D; createProxy</p>
+<p>​	Ⅰ获取所有增强器(增强类中的方法)</p>
+<p>​	 Ⅱ并保存到ProxyFactory中</p>
+<p>​	Ⅲ创建代理对象：Spring自动决定</p>
+<p>​			JdkDynamicAopProxy(config);jdk动态代理；</p>
+<p>​			ObjenesisCglibAopProxy(config);cglib的动态代理</p>
+<p>④给容器中返回当前组件使用cglib增强的代理对象</p>
+<p>⑤当容器中获取到这个组件的代理对象，执行目标方法的时候就会执行通知方法的流程</p>
+<h5 id="Aop代理对象执行目标方法"><a href="#Aop代理对象执行目标方法" class="headerlink" title="Aop代理对象执行目标方法"></a>Aop代理对象执行目标方法</h5><p><font color='red'><strong>可以理解为从代理对象执行的目标方法中获取拦截器链，有则创建一个方法调用，传入相关的信息，没有则直接调用目标方法</strong></font></p>
+<p>容器中保存了组件的代理对象(cglib增强后的对象)，这个对象里面保存了详细的信息(增强器，目标对象等等)</p>
+<p>①CglibAopProxy.intercept();拦截目标方法的执行</p>
+<p>②获取代理对象将要执行的目标方法的拦截器链;</p>
+<p>List<Object> chain &#x3D; this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);</p>
+<p>​		Ⅰ.List<Object> interceptorList &#x3D; new ArrayList 保存所有的拦截器(共有5个，一个默认的ExposeInvocationInterceptor 和 4个增强器)</p>
+<p>​		Ⅱ.遍历所有的增强器，将每一个增强器度转为Interceptor；	</p>
+<table>
+<thead>
+<tr>
+<th align="left">Interceptor[] interceptors &#x3D; registry.getInterceptors(advisor)方法中的执行：</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">创建List<MethodInterceptor>，获得当前的增强器</td>
+</tr>
+<tr>
+<td align="left">判断增强器类型，如果是MethodInterceptor，直接加入到集合中</td>
+</tr>
+<tr>
+<td align="left">如果不是，使用AdvisorAdapter适配器将增强器转为MethodInterceptor</td>
+</tr>
+<tr>
+<td align="left">转换完成将此List转换为MethodInterceptor类型的数组并返回</td>
+</tr>
+</tbody></table>
+<p>③如果没有拦截器链，则直接执行目标方法</p>
+<p><strong>拦截器链（每一个通知方法又被包装为方法拦截器，利用MethodInterceptor机制）</strong></p>
+<p>④如果有拦截器链，将需要执行的目标对象，目标方法，拦截器链等信息传入创建一个CglibMethodInvocation对象</p>
+<p>并调用Object retVal &#x3D; mi.proceed()方法执行,此时proceed()的调用者就是刚刚创建的CglibMethodInvocation这个对象</p>
+<h5 id="拦截器链的执行"><a href="#拦截器链的执行" class="headerlink" title="拦截器链的执行"></a><strong>拦截器链的执行</strong></h5><ul>
+<li>currentInterceptorIndex记录当前拦截器的索引</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//获取相应索引位置上的拦截器</span></span><br><span class="line"><span class="type">Object</span> <span class="variable">interceptorOrInterceptionAdvice</span> <span class="operator">=</span></span><br><span class="line">      <span class="built_in">this</span>.interceptorsAndDynamicMethodMatchers.get(++<span class="built_in">this</span>.currentInterceptorIndex);</span><br><span class="line"><span class="comment">//判断拦截器的类型</span></span><br><span class="line"><span class="keyword">if</span> (dm.methodMatcher.matches(<span class="built_in">this</span>.method, <span class="built_in">this</span>.targetClass, <span class="built_in">this</span>.arguments)) &#123;</span><br><span class="line">				<span class="keyword">return</span> dm.interceptor.invoke(<span class="built_in">this</span>);</span><br><span class="line">			&#125;</span><br><span class="line"><span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(<span class="built_in">this</span>);</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+
+<p>①如果没有拦截器执行就执行目标方法，或拦截器的索引和拦截器数组-1大小一样(执行到了最后的一个拦截器)</p>
+<p>②链式获取每一个拦截器，拦截器执行invoke方法，每一个拦截器等待下一个拦截器执行完成返回以后再来执行</p>
+<p>​	<strong>通过拦截器链的机制，保证通知方法与目标方法的执行顺序</strong></p>
+<p><strong><img src="https://s1.ax1x.com/2022/05/09/OJtQjU.png" alt="拦截器链执行顺序"></strong></p>
+<h4 id="Aop原理总结"><a href="#Aop原理总结" class="headerlink" title="Aop原理总结"></a><strong>Aop原理总结</strong></h4><p>1.@EnableAspectJAutoProxy 开启AOP功能</p>
+<ul>
+<li><p><strong>@EnableAspectJAutoProxy 会给容器中注册一个组件 AnnotationAwareAspectJAutoProxyCreator</strong></p>
+</li>
+<li><p><strong>AnnotationAwareAspectJAutoProxyCreator是一个后置处理器；</strong></p>
+</li>
+</ul>
+<p>2.容器的创建流程：</p>
+<p>​		①registerBeanPostProcessors（）注册后置处理器；创建AnnotationAwareAspectJAutoProxyCreator对象</p>
+<p>​		②finishBeanFactoryInitialization（）实例化剩下的单实例bean</p>
+<p>​				Ⅰ.创建业务逻辑组件和切面组件</p>
+<p>​				Ⅱ.AnnotationAwareAspectJAutoProxyCreator拦截组件的创建过程</p>
+<p>​				Ⅲ.组件创建完之后，判断组件是否需要增强</p>
+<p>​						需要增强：切面的通知方法，包装成增强器（Advisor）;给业务逻辑组件创建一个代理对象（cglib）</p>
+<p>3.执行目标方法：</p>
+<p>​		①代理对象执行目标方法</p>
+<p>​		②CglibAopProxy.intercept()</p>
+<p>​			Ⅰ.得到目标方法的拦截器链（增强器包装成拦截器MethodInterceptor）</p>
+<p>​			Ⅱ.利用拦截器的链式机制，依次进入每一个拦截器进行执行；</p>
+<p>​			Ⅲ.效果：</p>
+<p>​				<strong>正常执行：前置通知-》目标方法-》后置通知-》最终通知</strong></p>
+<p>​				<strong>出现异常：前置通知-》目标方法-》最终通知-》异常通知</strong></p>
+<h3 id="声明式事务"><a href="#声明式事务" class="headerlink" title="声明式事务"></a><strong>声明式事务</strong></h3><p><strong>@Transactional 表示当前方法是个事务方法</strong></p>
+<p><strong>@EnableTransactionManagement 开启基于注解的事务管理功能</strong></p>
+<p>基于注解模式开启事务的步骤：</p>
+<p>①在配置类上开启基于注解的事务管理功能</p>
+<p>②将@Transactional 注解标注在需要进行事务管理的方法上</p>
+<p>③必须在容器中注册事务管理器(@Bean等方法)</p>
+<h4 id="注解实现事务管理的原理"><a href="#注解实现事务管理的原理" class="headerlink" title="注解实现事务管理的原理"></a><strong>注解实现事务管理的原理</strong></h4><p>1.@EnableTransactionManagement注解通过@Import向容器中导入TransactionManagementConfigurationSelector组件</p>
+<p>2.通过判断Advice.proxy分别导入</p>
+<p>​	AutoProxyRegistrar：给容器中注册InfrastructureAdvisorAutoProxyCreator 后置处理器组件</p>
+<p>作用：利用后置处理器的机制在对象创建以后，包装对象，返回一个代理对象，代理对象执行方法利用拦截器进行拦截</p>
+<p>​	ProxyTransactionManagementConfiguration组件</p>
+<p>作用：①给容器中注册事务增强器</p>
+<p>​				Ⅰ.事务增强器中有一个事务属性源的对象，new AnnotationTransactionAttributeSource()可以获取所有事务属性。</p>
+<p>​				Ⅱ.事务拦截器：transactionInterceptor保存了事务属性信息，事务管理器，同时它还是个MethodInterceptor，</p>
+<p>​										 	在目标方法执行的时候执行拦截器链，而这里的拦截器链只有一个拦截器就是事务拦截器</p>
+<p>​											 事务拦截器所做的工作：</p>
+<p>​												第一，获取事务相关的属性，</p>
+<p>​												第二，再获取事务管理器(如果是事先没有任何设置则默认按照PlatformTransactionManager类型获取一个)</p>
+<p>​												第三，执行目标方法：</p>
+<p>​														如果异常，获取事务管理器，利用事务管理器回滚操作</p>
+<p>​														如果正常，利用事务管理器，提交事务</p>
+<hr>
+<h2 id="扩展原理"><a href="#扩展原理" class="headerlink" title="扩展原理"></a>扩展原理</h2><h3 id="BeanFactoryPostProcessor"><a href="#BeanFactoryPostProcessor" class="headerlink" title="BeanFactoryPostProcessor"></a>BeanFactoryPostProcessor</h3><p>BeanPostProcessor的执行时机：它是bean的后置处理器，在bean的创建对象初始化前后进行工作</p>
+<p>BeanFactoryPostProcessor的执行时机：<font color='red'><strong>它是beanFactory的后置处理器，在BeanFactory完成标准初始化之后进行拦截工作，</strong></font></p>
+<p>​																		<font color='red'><strong>在所有定义的bean被加载到beanFactory，但还没有进行实例化之前</strong></font></p>
+<p>执行流程：</p>
+<p>1.创建ioc容器对象</p>
+<p>2.invokeBeanFactoryPostProcessors(beanFactory) 执行BeanFactoryPostProcessor；</p>
+<p>​	①直接在BeanFactory找到所有类型是BeanFactoryPostProcessor的组件并执行相应的方法</p>
+<p>​	②在实例化其他组件之前执行</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">this</span>();</span><br><span class="line">register(annotatedClasses); <span class="comment">//1.创建ioc容器对象</span></span><br><span class="line">refresh();</span><br><span class="line"></span><br><span class="line"><span class="comment">//refresh()里面各种调用方法执行到</span></span><br><span class="line">invokeBeanFactoryPostProcessors()&#123;</span><br><span class="line"><span class="comment">//按照类型获取所有的BeanFactoryPostProcessor组件的名称</span></span><br><span class="line">String[] postProcessorNames =</span><br><span class="line">				beanFactory.getBeanNamesForType(BeanFactoryPostProcessor.class) </span><br><span class="line"><span class="comment">//遍历获取的组件名称根据实现的不同接口分别放进不同的集合中</span></span><br><span class="line"><span class="keyword">for</span> (String ppName : postProcessorNames) &#123;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">		nonOrderedPostProcessorNames.add(ppName);</span><br><span class="line">	&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//新建一个nonOrderedPostProcessors集合放进所有符合此类型的组件名称</span></span><br><span class="line">List&lt;BeanFactoryPostProcessor&gt; nonOrderedPostProcessors = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;BeanFactoryPostProcessor&gt;();</span><br><span class="line">		<span class="keyword">for</span> (String postProcessorName : nonOrderedPostProcessorNames) &#123;</span><br><span class="line">			nonOrderedPostProcessors.add(beanFactory.getBean(postProcessorName, BeanFactoryPostProcessor.class));</span><br><span class="line">		&#125;</span><br><span class="line"><span class="comment">//2.遍历此nonOrderedPostProcessors挨个执行postProcessBeanFactory方法</span></span><br><span class="line">invokeBeanFactoryPostProcessors(nonOrderedPostProcessors, beanFactory);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="BeanDefinitionRegistryPostProcessor"><a href="#BeanDefinitionRegistryPostProcessor" class="headerlink" title="BeanDefinitionRegistryPostProcessor"></a>BeanDefinitionRegistryPostProcessor</h3><ul>
+<li><font color='red'><strong>继承至BeanFactoryPostProcessor，是BeanFactoryPostProcessor的子接口</strong></font></li>
+</ul>
+<p>执行时机：<font color='red'><strong>在所有定义的bean将要被加载到BeanFactory，bean没有进行实例化之前</strong></font></p>
+<p>执行顺序：1.创建ioc容器对象</p>
+<p>​					2.refresh()  –&gt; invokeBeanFactoryPostProcessors()</p>
+<p>​					3.从容器中获取所有的BeanDefinitionRegistryPostProcessor组件</p>
+<p>​							①依次除发所有的postProcessorBeanDefinitionRegistry()方法</p>
+<p>​							②再来触发postProcessBeanFactory()方法</p>
+<p>​					4.再从容器中找到BeanFactoryPostProcessor组件，依次触发()方法</p>
+<h3 id="ApplicationListener"><a href="#ApplicationListener" class="headerlink" title="ApplicationListener"></a>ApplicationListener</h3><p>ApplicationListener：监听容器中发布的事件，事件驱动模型开发</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//监听ApplicationEvent及其下面的子事件</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">ApplicationListener</span>&lt;E <span class="keyword">extends</span> <span class="title class_">ApplicationEvent</span>&gt; <span class="keyword">extends</span> <span class="title class_">EventListener</span></span><br></pre></td></tr></table></figure>
+
+<p>一、监听器的执行：</p>
+<p>①方法一：创建一个ApplicationListener接口的实现类来监听某个事件(必须是ApplicationEvent及其子类)</p>
+<p>​	方法二：使用注解@EventListener,其通过EventListenerMethodProcessor后置处理器解析标注了此注解</p>
+<p>②将此实现类加入到ioc容器</p>
+<p>③只有容器中有相关事件的发布，监听器就被触发</p>
+<p>​	ContextRefreshedEvent：容器刷新完成就会触发这个事件</p>
+<p>​	ContextClosedEvent：容器关闭时触发这个事件</p>
+<p>④发布一个自定义事件</p>
+<p>​	context.publishEvent()</p>
+<p>二、执行原理：</p>
+<p>1.创建ioc容器对象，refresh()</p>
+<p>2.finishRefresh()；容器完成刷新</p>
+<p>3.在publishEvent(new ContextRefreshedEvent(this))方法里面;</p>
+<p>​		①获取事件的多播器(派发器)，getApplicationEventMulticaster()</p>
+<p>​		 ②multicastEvent派发事件</p>
+<p>​		 ③获取所有支持类型的ApplicationListener</p>
+<p>​			for (final ApplicationListener&lt;?&gt; listener : getApplicationListeners(event, type)) {</p>
+<p>​			Ⅰ.如果Excutor不为空，则可以支持使用Executor进行异步派发事件 Executor executor &#x3D; getTaskExecutor();</p>
+<p>​			 Ⅱ.如果Excutor为空，则使用同步的方式直接执行listener方法 invokeListener(listener, event);</p>
+<p>​					拿到listener回调onApplicationEvent方法</p>
+<p>三、事件多播器的获取：</p>
+<p>①创建ioc容器对象</p>
+<p>②initApplicationEventMulticaster();初始化多播器</p>
+<p>​	两种情况：第一种，先去容器中尝试获取id&#x3D;“applicationEventMulticaster”的组件</p>
+<p>​						第二种，如果不存在则创建一个new SimpleApplicationEventMulticaster(beanFactory)</p>
+<p>​										并加入到容器中，则在其他组件派发事件自动注入这个组件</p>
+<p>四、容器中的监听器的获取：</p>
+<p>①创建ioc容器对象</p>
+<p>②registerListeners();</p>
+<p>​	从容器中获取所有的监听器并注册到applicationEventMulticastera派发器中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, <span class="literal">true</span>, <span class="literal">false</span>);</span><br><span class="line">	<span class="keyword">for</span> (String listenerBeanName : listenerBeanNames) &#123;</span><br><span class="line">		getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+
+<p>五、<font color='red'><strong>EventListenerMethodProcessor专用解析@EventListener注解，实现了SmartInitializingSingleton的接口</strong></font></p>
+<p>SmartInitializingSingleton接口的执行原理：</p>
+<p>①创建ioc容器对象并refresh()</p>
+<p>②finishBeanFactoryInitialization(beanFactory);实例化非延迟加载的单实例bean</p>
+<p>​	Ⅰ.先创建所有的单实例bean：getBean();</p>
+<p>​	Ⅱ.获取所有创建好的单实例bean，判断是否是SmartInitializingSingleton类型的：</p>
+<p>​		符合则调用afterSingletonsInstantiated()方法</p>
+<p>​		在afterSingletonsInstantiated()方法中获取所有类型的bean对象并逐个遍历处理processBean(factories, beanName, type);</p>
+<p>​		在processBean()方法中判断每一个bean的方法是否标注了@EventListener注解，若有则通过EventListenerFactory工厂为这个</p>
+<p>​		方法创建一个applicationListener对象，最后将这个对象添加到ioc容器中</p>
+<p>​	 Ⅲ.执行发布事件方法，剩下的流程执行原理第三步无异</p>
+<h2 id="Spring容器创建过程"><a href="#Spring容器创建过程" class="headerlink" title="Spring容器创建过程"></a>Spring容器创建过程</h2><p>1.spring容器的refresh()方法	创建刷新</p>
+<p>①prepareRefresh(); 刷新前的一些预处理</p>
+<p>​	Ⅰ.initPropertySources(); 初始化部分属性设置；默认留给子类做扩展用</p>
+<p>​	Ⅱ.getEnvironment().validateRequiredProperties()；验证必须的属性文件数据</p>
+<p>​	Ⅲ.earlyApplicationEvents &#x3D; new LinkedHashSet<ApplicationEvent>();收集部分早期事件，当多播器初始化完成后立即发布</p>
+<p>②ConfigurableListableBeanFactory beanFactory &#x3D; obtainFreshBeanFactory();获得bean工厂</p>
+<p>​	Ⅰ.refreshBeanFactory();刷新BeanFactory</p>
+<p>​			this.beanFactory.setSerializationId(getId()); 给当前的beanFactory设置一个id</p>
+<p>​	Ⅱ.getBeanFactory() <font color='red'><strong>通过AnnotationConfigApplicationContext的父类</strong></font></p>
+<p>​		<font color='red'><strong>GenericApplicationContext的无参构造器中获取创建好的beanFactory对象</strong></font></p>
+<p>​	Ⅲ.将刚刚获得的BeanFactory对象【DefaultListableBeanFactory】，此时的BeanFactory只有默认内容，什么都没做设置</p>
+<p>③prepareBeanFactory(beanFactory);对刚刚获得的默认BeanFactory进行一些设置</p>
+<p>​	Ⅰ.设置BeanFactory的类加载器、表达式解析器等</p>
+<p>​	Ⅱ.添加部分的后置处理器【ApplicationContextAwareProcessor】</p>
+<p>​	Ⅲ.设置忽略自动装配的接口</p>
+<p>​	Ⅳ.注册可以解析的自动装配，能够在任何组件中自动注入的：BeanFactory，ApplicationContext</p>
+<p>​	Ⅴ.添加BeanPostProcessor【ApplicationListenerDetector】</p>
+<p>​	Ⅵ.添加编译时的AspectJ</p>
+<p>​	Ⅶ.给BeanFactory中注册一些能用的组件</p>
+<p>④postProcessBeanFactory(beanFactory);在BeanFactory完成部分设置后进行一些后置处理工作，一般留给子类重写做扩展用</p>
+<p>⑤invokeBeanFactoryPostProcessors(beanFactory); 在这里面执行两个后置处理器</p>
+<p>BeanDefinitionRegistryPostProcessor 的postProcessBeanDefinitionRegistry()方法</p>
+<p>BeanDefinitionRegistryPostProcessor的postProcessBeanFactory()方法</p>
+<p>BeanFactoryPostProcessor的postProcessBeanFactory()方法</p>
+<p>​	Ⅰ.获取所有的BeanDefinitionRegistryPostProcessor</p>
+<p>​	Ⅱ.按照实现PriorityOrdered, Ordered接口, 没实现接口的顺序进行注册并遍历执行对应的postProcessBeanDefinitionRegistry</p>
+<p>​	Ⅲ.获取所有的BeanFactoryPostProcessor</p>
+<p>​	Ⅳ.按照实现PriorityOrdered, Ordered接口, 没实现接口的顺序进行注册并遍历执行对应的postProcessBeanFactory</p>
+<p>⑥registerBeanPostProcessors(beanFactory); 注册其他的后置处理器</p>
+<p>​	<font color='red'><strong>不同接口类型的BeanPostProcessor在Bean创建前后执行的时机都不一样</strong></font></p>
+<p>​	BeanPostProcessor：在bean对象实例化和属性赋值进行初始化前后进行调用</p>
+<p>​	DestructionAwareBeanPostProcessor：在bean对象销毁之前进行工作</p>
+<p>​	InstantiationAwareBeanPostProcessor：在bean对象实例化前后进行拦截工作</p>
+<p>​	SmartInstantiationAwareBeanPostProcessor：在bean创建对象之前进行拦截工作</p>
+<p>​	MergedBeanDefinitionPostProcessor【internalPostProcessors】：在创建出Bean的单实例对象后，初始化之前进行一些处理工作</p>
+<p>​	Ⅰ.获取所有的BeanPostProcessor；所有的后置处理器都可以通过PriorityOrdered, Ordered接口执行优先级</p>
+<p>​	Ⅱ.根据实现的不同接口放进不同的后置处理器集合中</p>
+<p>​	Ⅲ.优先注册实现PriorityOrdered的BeanPostProcessor，其次实现Ordered，然后没实现任何接口的，</p>
+<p>​		最后注册属于internalPostProcessors类型的后置处理器</p>
+<p>​	Ⅳ.最后再注册一个ApplicationListenerDetector，来在bean创建完成后检测是否是ApplicationListener，</p>
+<p>​			如果是就执行this.applicationContext.addApplicationListener((ApplicationListener&lt;?&gt;) bean);</p>
+<p>⑦initMessageSource(); 初始化MessageSource组件(做国际化功能；消息绑定，消息解析）</p>
+<p>​	Ⅰ.获取BeanFactory</p>
+<p>​	Ⅱ.看容器中是否有id为MessageSource的组件</p>
+<p>​		如果有就直接赋值给messageSource属性，没有则创建一个DelegatingMessageSource</p>
+<p>​			MessageSource：取出国际化配置文件中的某个key的值；能按照区域信息获取</p>
+<p>​	Ⅲ.把创建好的MessageSource注册到容器中：以后获取国际化配置文件的值可以自动注入MessageSource</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">beanFactory.registerSingleton(MESSAGE_SOURCE_BEAN_NAME, <span class="built_in">this</span>.messageSource);</span><br><span class="line">String <span class="title function_">getMessage</span><span class="params">(String code, Object[] args, Locale locale)</span> <span class="keyword">throws</span> NoSuchMessageException;</span><br></pre></td></tr></table></figure>
+
+<p>⑧initApplicationEventMulticaster();初始化事件多播器</p>
+<p>​	Ⅰ.获取BeanFactory</p>
+<p>​	Ⅱ.从BeanFactory中尝试获取容器中是否有beanName &#x3D;&#x3D; “applicationEventMulticaster”的bean。</p>
+<p>​	Ⅲ.如果没有就创建一个SimpleApplicationEventMulticaster(beanFactory)，再将其添加到容器中</p>
+<p>⑨onRefresh()此方法为空方法，留给子类做实现。</p>
+<p>⑩registerListeners(); 给容器中将所有的ApplicationListener进行注册</p>
+<p>​	Ⅰ.从容器中拿到所有的ApplicationListener</p>
+<p>​	Ⅱ.将每个监听器添加到事件多播器中</p>
+<p>getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);</p>
+<p>​	Ⅲ.当有早期事件存在时，将早期事件通过多播器进行事件的发布</p>
+<p>⑪finishBeanFactoryInitialization(beanFactory);</p>
+<p>实例化剩下的所有非延迟加载的bean对象，因为有些内置的bean可能在前面的步骤已经完成实例化和初始化的过程</p>
+<p>​	Ⅰ.获取容器中所有已经定义好的bean的名称放进一个集合中</p>
+<p>​	Ⅱ.通过遍历每一个bean，并获取bean的定义信息 RootBeanDefinition bd &#x3D; getMergedLocalBeanDefinition(beanName);</p>
+<p>​	Ⅲ.判断这个bean不是抽象的且是单实例bean且不是延迟加载的，</p>
+<p>​	Ⅳ.再次进行判断这个bean是否实现FactoryBean接口，是则例如内置的FactoryBean创建对象</p>
+<p>​		不是则调用getBean(beanName) 创建对象</p>
+<p>​	Ⅴ.剩下的内容与Bean生命周期处的代码顺序一致</p>
+<p>⑫finishRefresh(); 完成BeanFactory的刷新工作</p>
+<p>​	Ⅰ.initLifecycleProcessor();初始化和生命周期有关的后置处理器</p>
+<p>​		默认从容器中找是否有id为lifecycleProcessor的的组件；如果没有则创建默认的new DefaultLifecycleProcessor()并加入到容器中</p>
+<p>​		允许通过LifecycleProcessor接口的实现类，可以在BeanFactory执行到相应的周期进行一些处理</p>
+<p>​	Ⅱ.getLifecycleProcessor().onRefresh();拿到上面生命周期组件回调容器刷新完成的方法</p>
+<p>​	Ⅲ.publishEvent(new ContextRefreshedEvent(this));发布容器刷新完成的事件</p>
+<p>​	Ⅳ.LiveBeansView.registerApplicationContext(this);</p>
+<p>​		<img src="https://s1.ax1x.com/2022/05/09/OJtwjO.png" alt="refresh方法内部的执行顺序"></p>
+<hr>
+<p>Spring创建过程的简单总结</p>
+<p>1.Spring容器在启动的时候，先会保存所有注册进来的Bean的定义信息</p>
+<p>​	①xml注册bean：<bean></p>
+<p>​	②注解注册bean：@Component、@Bean</p>
+<p>2.Spring容器会在合适的时机创建这些bean</p>
+<p>​	①用到bean的时候，利用getBean方法创建bean，并保存在容器中</p>
+<p>​	②统一创建所有剩下的bean的时候，finishBeanFactoryInitialization(beanFactory);</p>
+<p>3.后置处理器：每一个bean创建完成，都会使用各种后置处理器进行处理，来增强bean的功能</p>
+<p>​	AutowiredAnnotationBeanPostProcessor：处理自动注入</p>
+<p>​	AnnotationAwareAspectJAutoProxyCreator：创建代理对象，进行aop功能</p>
+<p>4.事件驱动模型</p>
+<p>​	ApplicationListener：用于事件监听</p>
+<p>​	ApplicationEventMulticaster：多播器用于事件派发</p>
+<hr>
+<h2 id="web"><a href="#web" class="headerlink" title="web"></a>web</h2><p>1.Shared libraries(共享库) &#x2F;runtimes pluggability(运行时插件能力)</p>
+<p>在容器&#x2F;应用程序启动的时候都会扫描jar包里面META-INF&#x2F;services&#x2F;javax.servlet.ServletContainerInitializer</p>
+<p>指定的实现类，启动并运行这个实现类的onStartup方法：@HandlesTypes能够传入指定的类型</p>
+<p>使用ServletContext注册Web的三大组件(Servlet程序、Filter过滤器、Listener监听器)</p>
+<p>使用硬编码的方式在项目启动的时候给ServletContext里面注册组件，且只有在项目启动时能注册</p>
+<p>​	①ServletContainerInitializer得到的ServletContext</p>
+<p>​	②ServletContextListener得到的ServletContext</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在容器启动的时候会将@HandlesTypes指定的这个类型下面的子类(实现类、子接口)传递过来</span></span><br><span class="line"><span class="comment">//传入指定的类型</span></span><br><span class="line"><span class="meta">@HandlesTypes(value = &#123;TestService.class&#125;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyServletContainerInitializer</span> <span class="keyword">implements</span> <span class="title class_">ServletContainerInitializer</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Description : 在应用启动的时候运行这个方法</span></span><br><span class="line"><span class="comment">     * 可以通过这个方法中的ServletContext注册Web的三大组件(Servlet程序、Filter过滤器、Listener监听器)</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@date</span> 2022/5/8</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> set 传入指定类型的所有子类型</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> servletContext  代表当前web应用的servletContext，每一个web都只有一个servletContext</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> void</span></span><br><span class="line"><span class="comment">     **/</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onStartup</span><span class="params">(Set&lt;Class&lt;?&gt;&gt; set, ServletContext servletContext)</span> <span class="keyword">throws</span> ServletException &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;指定的类型：&quot;</span>);</span><br><span class="line">        set.forEach(System.out::println);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//注册组件</span></span><br><span class="line">        <span class="comment">//注册Servlet</span></span><br><span class="line">        ServletRegistration.<span class="type">Dynamic</span> <span class="variable">servlet</span> <span class="operator">=</span> servletContext.addServlet(<span class="string">&quot;userServlet&quot;</span>, UserServlet.class);</span><br><span class="line">        <span class="comment">//配置Servlet的映射信息</span></span><br><span class="line">        servlet.addMapping(<span class="string">&quot;/user&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//注册Filter过滤器</span></span><br><span class="line">        FilterRegistration.<span class="type">Dynamic</span> <span class="variable">filter</span> <span class="operator">=</span> servletContext.addFilter(<span class="string">&quot;userFilter&quot;</span>, UserFilter.class);</span><br><span class="line">        <span class="comment">//配置Filter过滤器的映射信息</span></span><br><span class="line">        filter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST),<span class="literal">true</span>,<span class="string">&quot;/*&quot;</span>);</span><br><span class="line">        <span class="comment">//注册Listener监听器</span></span><br><span class="line">        servletContext.addListener(UserListener.class);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="servlet3-0与springMVC的整合"><a href="#servlet3-0与springMVC的整合" class="headerlink" title="servlet3.0与springMVC的整合"></a>servlet3.0与springMVC的整合</h3><p>1.web容器在启动的时候，会在扫描每个jar包里面存在的META-INF&#x2F;services&#x2F;javax.servlet.ServletContainerInitializer文件</p>
+<p>2.加载这个文件指定的类SpringServletContainerInitializer，而这个类通过@HandlesTypes注解指定了WebApplicationInitializer接口</p>
+<p>3.spring的应用一启动就会加载WebApplicationInitializer接口的所有实现类</p>
+<p>4.在onStartup方法里面，在<font color='red'><strong>判断这些实现类都不是接口和抽象类后就会为这些组件(实现类)创建对象并添加进initializers集合中</strong></font></p>
+<p><font color='red'><strong>WebApplicationInitializer接口各个实现类(并不是全部执行，而是实现哪个执行哪个)的onStartup()方法的作用：</strong></font></p>
+<p>​	①AbstractContextLoaderInitializer：创建根容器；createRootApplicationContext();</p>
+<p>​	②AbstractDispatcherServletInitializer：创建web的ioc容器；createServletApplicationContext();</p>
+<p>​																		   创建了DispatcherServlet；createDispatcherServlet()</p>
+<p>​																		   将创建的DispatcherServlet添加到ServletContext中</p>
+<p>​	③AbstractAnnotationConfigDispatcherServletInitializer；注解方式配置DispatcherServlet初始化器，继承自上面的②这个类</p>
+<p>​																			创建根容器(相当于重写了父类的这个方法)：createRootApplicationContext{</p>
+<p>​																																						getRootConfigClasses();传入一个配置类}</p>
+<p>​																			创建web的ioc容器(相当于重写了父类的这个方法)：createServletApplicationContext{	</p>
+<p>​																																						getServletConfigClasses();获取一个配置类}</p>
+<p>5.最终遍历initializers集合，通过每个实现类的对象逐个调用其所在类的onStartup()方法</p>
+<p>以上的总结：</p>
+<p>​	①如果需要以注解的方式启动SpringMVC只需要继承AbstractAnnotationConfigDispatcherServletInitializer，</p>
+<p>​		实现其中的抽象方法来指定DispatcherServlet的配置信息即可</p>
+<h3 id="定制SpringMVC"><a href="#定制SpringMVC" class="headerlink" title="定制SpringMVC"></a>定制SpringMVC</h3><p>1.@EnableWebMVC：开启SpringMVC定制配置</p>
+<p>2.配置组件（视图解析器、视图映射、静态资源映射、拦截器。。。）extends WebMvcConfigurerAdapter</p>
+<h3 id="Servlet3-0异步请求"><a href="#Servlet3-0异步请求" class="headerlink" title="Servlet3.0异步请求"></a>Servlet3.0异步请求</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//asyncSupported的值默认是false，必须手动设置为true才能支持异步</span></span><br><span class="line"><span class="meta">@WebServlet(value = &quot;/async&quot;,asyncSupported = true)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AsynchronousServlet</span> <span class="keyword">extends</span> <span class="title class_">HttpServlet</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> ServletException, IOException &#123;</span><br><span class="line">        <span class="comment">//1.支持异步处理asyncSupported = true</span></span><br><span class="line">        <span class="comment">//2.开启异步模式</span></span><br><span class="line">        System.out.println(<span class="string">&quot;主线程：&quot;</span> + Thread.currentThread().getName() + System.currentTimeMillis());</span><br><span class="line">        <span class="type">AsyncContext</span> <span class="variable">asyncContext</span> <span class="operator">=</span> req.startAsync();</span><br><span class="line">        <span class="comment">//3.业务逻辑进行异步处理：开始异步处理</span></span><br><span class="line">        asyncContext.start(<span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    System.out.println(<span class="string">&quot;副线程开启：&quot;</span> + Thread.currentThread().getName() + System.currentTimeMillis());</span><br><span class="line">                    testSync();</span><br><span class="line">                    <span class="comment">//表示异步处理已完成</span></span><br><span class="line">                    asyncContext.complete();</span><br><span class="line">                    <span class="comment">//4.获取响应</span></span><br><span class="line">                    <span class="type">ServletResponse</span> <span class="variable">response</span> <span class="operator">=</span> asyncContext.getResponse();</span><br><span class="line">                    response.getWriter().write(<span class="string">&quot;处理完成&quot;</span>);</span><br><span class="line">                    System.out.println(<span class="string">&quot;副线程结束：&quot;</span> + Thread.currentThread().getName() + System.currentTimeMillis());</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        System.out.println(<span class="string">&quot;主线程结束：&quot;</span> + Thread.currentThread().getName() + System.currentTimeMillis());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testSync</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        Thread.sleep(<span class="number">3000</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://s1.ax1x.com/2022/05/09/OJtWgf.png" alt="异步线程图示"></p>
+<h3 id="SpringMVC异步请求"><a href="#SpringMVC异步请求" class="headerlink" title="SpringMVC异步请求"></a>SpringMVC异步请求</h3><h4 id="Callable"><a href="#Callable" class="headerlink" title="Callable"></a>Callable</h4><p>处理过程：</p>
+<p>1.控制器返回一个Callable</p>
+<p>2.Spring异步处理，将Callable提交到一个TaskExecutor 使用一个隔离的线程进行执行</p>
+<p>3.DispatcherServlet和所有的Filter过滤器退出Servlet容器的线程，但响应依旧保持打开状态</p>
+<p>4.Callable返回结果，SpringMVC将请求再次重新派发给Servlet容器，恢复之前的操作</p>
+<p>5.根据Callable返回的结果，SpringMVC继续进行视图渲染流程等(从收到请求-处理请求)</p>
+<ul>
+<li><p><font color='red'><strong>异步的拦截器(同步的拦截器只能拦截同步的请求，因此异步请求必须注册异步拦截器)</strong></font></p>
+<p>①原生API的AsyncListener</p>
+<p>②SpringMVC实现AsyncHandlerInterceptor</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AsyncController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ResponseBody</span></span><br><span class="line">    <span class="meta">@RequestMapping(&quot;/async1&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Callable&lt;String&gt; <span class="title function_">async1</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;主线程start：&quot;</span> + Thread.currentThread().getName() + System.currentTimeMillis());</span><br><span class="line">        Callable&lt;String&gt; callable = <span class="keyword">new</span> <span class="title class_">Callable</span>&lt;String&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> String <span class="title function_">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;副线程start：&quot;</span> + Thread.currentThread().getName() + System.currentTimeMillis());</span><br><span class="line">                Thread.sleep(<span class="number">2000</span>);</span><br><span class="line">                System.out.println(<span class="string">&quot;副线程end：&quot;</span> + Thread.currentThread().getName() + System.currentTimeMillis());</span><br><span class="line">                <span class="keyword">return</span> <span class="string">&quot;Callable&lt;String&gt; async1()&quot;</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        System.out.println(<span class="string">&quot;主线程end：&quot;</span> + Thread.currentThread().getName() + System.currentTimeMillis());</span><br><span class="line">        <span class="keyword">return</span> callable;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//处理结果</span></span><br><span class="line"><span class="comment">//触发拦截器的执行</span></span><br><span class="line"><span class="comment">//主线程start：http-apr-8080-exec-81652082984174</span></span><br><span class="line"><span class="comment">//主线程end：http-apr-8080-exec-81652082984177</span></span><br><span class="line"><span class="comment">//===DispatcherServlet和所有的Filter过滤器退出Servlet容器的线程===</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//===等待Callable的执行===</span></span><br><span class="line"><span class="comment">//副线程start：MvcAsync11652082984187</span></span><br><span class="line"><span class="comment">//副线程end：MvcAsync11652082986188</span></span><br><span class="line"><span class="comment">//===Callable执行完成===</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//===DispatcherServlet收到由SpringMVC调度的经过callable的请求===</span></span><br><span class="line"><span class="comment">//触发拦截器的执行</span></span><br><span class="line"><span class="comment">//拦截器的执行完成 (Callable之前的返回值就是目标方法的返回值，因此目标方法就不再执行)</span></span><br><span class="line"><span class="comment">//afterCompletion</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="DeferredResult"><a href="#DeferredResult" class="headerlink" title="DeferredResult"></a>DeferredResult</h4><ul>
+<li>模拟场景：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ResponseBody</span></span><br><span class="line">   <span class="meta">@RequestMapping(&quot;/createOrder&quot;)</span></span><br><span class="line">   <span class="keyword">public</span> DeferredResult&lt;Object&gt; <span class="title function_">deferredResult</span><span class="params">()</span>&#123;</span><br><span class="line">       DeferredResult&lt;Object&gt; deferredResult = <span class="keyword">new</span> <span class="title class_">DeferredResult</span>&lt;&gt;((<span class="type">long</span>)<span class="number">3000</span>,<span class="string">&quot;fail create&quot;</span>);</span><br><span class="line">       DeferredResultQueue.save(deferredResult);</span><br><span class="line">       <span class="keyword">return</span> deferredResult;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="meta">@ResponseBody</span></span><br><span class="line">   <span class="meta">@RequestMapping(&quot;/create&quot;)</span></span><br><span class="line">   <span class="keyword">public</span> String <span class="title function_">create</span><span class="params">()</span>&#123;</span><br><span class="line">       <span class="comment">//创建订单</span></span><br><span class="line">       <span class="type">String</span> <span class="variable">order</span> <span class="operator">=</span> UUID.randomUUID().toString();</span><br><span class="line">       DeferredResult&lt;Object&gt; result = DeferredResultQueue.get();</span><br><span class="line">       result.setResult(order);</span><br><span class="line">       <span class="keyword">return</span> <span class="string">&quot;order:&quot;</span> + order;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://s1.ax1x.com/2022/05/09/OJtfv8.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">Year21</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="http://year21.top/2022/05/09/SpringByAnotation">http://year21.top/2022/05/09/SpringByAnotation</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://xxxccc1986.github.io" target="_blank">Year 21's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Annotation/">Annotation</a></div><div class="post_share"><div class="social-share" data-image="https://w.wallhaven.cc/full/72/wallhaven-7278dy.jpg" data-sites="facebook,twitter,wechat,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.jpg" target="_blank"><img class="post-qr-code-img" src="/img/wechat.jpg" alt="wechat"/></a><div class="post-qr-code-desc">wechat</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="alipay"/></a><div class="post-qr-code-desc">alipay</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-full"><a href="/2022/04/28/Redis/"><img class="prev-cover" src="https://s1.ax1x.com/2022/04/28/LOGwvj.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Redis</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s4.ax1x.com/2022/01/18/7BWTQx.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Year 21</div><div class="author-info__description">昨天   今天   明天</div></div><div class="card-info-data is-center"><div class="card-info-data-item"><a href="/archives/"><div class="headline">文章</div><div class="length-num">17</div></a></div><div class="card-info-data-item"><a href="/tags/"><div class="headline">标签</div><div class="length-num">16</div></a></div><div class="card-info-data-item"><a href="/categories/"><div class="headline">分类</div><div class="length-num">7</div></a></div></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxccc1986"><i class="fab fa-github"></i><span>Github</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://wpa.qq.com/msgrd?v=3&amp;uin=1483501858&amp;site=qq&amp;menu=yes" target="_blank" title="QQ"><i class="fab fa-qq"></i></a><a class="social-icon" href="https://t.me/year_21_xx" target="_blank" title="Telegram"><i class="fab fa-telegram"></i></a><a class="social-icon" href="mailto:masicjokersic@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">一个不知名的初学者，欢迎指教。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Spring%E6%B3%A8%E8%A7%A3%E9%A9%B1%E5%8A%A8"><span class="toc-number">1.</span> <span class="toc-text">Spring注解驱动</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8"><span class="toc-number">1.1.</span> <span class="toc-text">容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AnnotationConfigApplicationContext"><span class="toc-number">1.1.1.</span> <span class="toc-text">AnnotationConfigApplicationContext</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%84%E4%BB%B6%E6%B7%BB%E5%8A%A0"><span class="toc-number">1.1.2.</span> <span class="toc-text">组件添加</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Baen%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">1.1.2.1.</span> <span class="toc-text">Baen的生命周期</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%84%E4%BB%B6%E8%B5%8B%E5%80%BC"><span class="toc-number">1.1.3.</span> <span class="toc-text">组件赋值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AOP"><span class="toc-number">1.1.4.</span> <span class="toc-text">AOP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Aop%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%8E%9F%E7%90%86"><span class="toc-number">1.1.4.1.</span> <span class="toc-text">Aop实现的原理</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%90%8E%E7%BD%AE%E5%A4%84%E7%90%86%E5%99%A8%E7%9A%84%E6%B3%A8%E5%86%8C%E5%92%8C%E5%88%9B%E5%BB%BA"><span class="toc-number">1.1.4.1.1.</span> <span class="toc-text">后置处理器的注册和创建</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%90%8E%E7%BD%AE%E5%A4%84%E7%90%86%E5%99%A8%E7%9A%84%E6%89%A7%E8%A1%8C%E6%97%B6%E6%9C%BA"><span class="toc-number">1.1.4.1.2.</span> <span class="toc-text">后置处理器的执行时机</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%90%8E%E7%BD%AE%E5%A4%84%E7%90%86%E5%99%A8%E5%88%9B%E5%BB%BAAop%E4%BB%A3%E7%90%86%E5%AF%B9%E8%B1%A1"><span class="toc-number">1.1.4.1.3.</span> <span class="toc-text">后置处理器创建Aop代理对象</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Aop%E4%BB%A3%E7%90%86%E5%AF%B9%E8%B1%A1%E6%89%A7%E8%A1%8C%E7%9B%AE%E6%A0%87%E6%96%B9%E6%B3%95"><span class="toc-number">1.1.4.1.4.</span> <span class="toc-text">Aop代理对象执行目标方法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%8B%A6%E6%88%AA%E5%99%A8%E9%93%BE%E7%9A%84%E6%89%A7%E8%A1%8C"><span class="toc-number">1.1.4.1.5.</span> <span class="toc-text">拦截器链的执行</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Aop%E5%8E%9F%E7%90%86%E6%80%BB%E7%BB%93"><span class="toc-number">1.1.4.2.</span> <span class="toc-text">Aop原理总结</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A3%B0%E6%98%8E%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="toc-number">1.1.5.</span> <span class="toc-text">声明式事务</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E8%A7%A3%E5%AE%9E%E7%8E%B0%E4%BA%8B%E5%8A%A1%E7%AE%A1%E7%90%86%E7%9A%84%E5%8E%9F%E7%90%86"><span class="toc-number">1.1.5.1.</span> <span class="toc-text">注解实现事务管理的原理</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E5%8E%9F%E7%90%86"><span class="toc-number">1.2.</span> <span class="toc-text">扩展原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#BeanFactoryPostProcessor"><span class="toc-number">1.2.1.</span> <span class="toc-text">BeanFactoryPostProcessor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BeanDefinitionRegistryPostProcessor"><span class="toc-number">1.2.2.</span> <span class="toc-text">BeanDefinitionRegistryPostProcessor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ApplicationListener"><span class="toc-number">1.2.3.</span> <span class="toc-text">ApplicationListener</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spring%E5%AE%B9%E5%99%A8%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B"><span class="toc-number">1.3.</span> <span class="toc-text">Spring容器创建过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web"><span class="toc-number">1.4.</span> <span class="toc-text">web</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#servlet3-0%E4%B8%8EspringMVC%E7%9A%84%E6%95%B4%E5%90%88"><span class="toc-number">1.4.1.</span> <span class="toc-text">servlet3.0与springMVC的整合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E5%88%B6SpringMVC"><span class="toc-number">1.4.2.</span> <span class="toc-text">定制SpringMVC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Servlet3-0%E5%BC%82%E6%AD%A5%E8%AF%B7%E6%B1%82"><span class="toc-number">1.4.3.</span> <span class="toc-text">Servlet3.0异步请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SpringMVC%E5%BC%82%E6%AD%A5%E8%AF%B7%E6%B1%82"><span class="toc-number">1.4.4.</span> <span class="toc-text">SpringMVC异步请求</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Callable"><span class="toc-number">1.4.4.1.</span> <span class="toc-text">Callable</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DeferredResult"><span class="toc-number">1.4.4.2.</span> <span class="toc-text">DeferredResult</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/05/09/SpringByAnnotation/" title="Spring注解驱动"><img src="https://w.wallhaven.cc/full/72/wallhaven-7278dy.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring注解驱动"/></a><div class="content"><a class="title" href="/2022/05/09/SpringByAnnotation/" title="Spring注解驱动">Spring注解驱动</a><time datetime="2022-05-09T12:39:02.000Z" title="发表于 2022-05-09 20:39:02">2022-05-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/28/Redis/" title="Redis"><img src="https://s1.ax1x.com/2022/04/28/LOGwvj.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis"/></a><div class="content"><a class="title" href="/2022/04/28/Redis/" title="Redis">Redis</a><time datetime="2022-04-28T02:48:02.000Z" title="发表于 2022-04-28 10:48:02">2022-04-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/24/Git/" title="Git"><img src="https://s1.ax1x.com/2022/04/24/Lh57tI.gif" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Git"/></a><div class="content"><a class="title" href="/2022/04/24/Git/" title="Git">Git</a><time datetime="2022-04-24T02:46:02.000Z" title="发表于 2022-04-24 10:46:02">2022-04-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/22/SSM-CRUD/" title="SSM-CRUD整合"><img src="https://w.wallhaven.cc/full/o3/wallhaven-o3mp39.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SSM-CRUD整合"/></a><div class="content"><a class="title" href="/2022/04/22/SSM-CRUD/" title="SSM-CRUD整合">SSM-CRUD整合</a><time datetime="2022-04-22T02:16:02.000Z" title="发表于 2022-04-22 10:16:02">2022-04-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/22/MyBatis/" title="MyBatis"><img src="https://w.wallhaven.cc/full/28/wallhaven-28xmr9.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="MyBatis"/></a><div class="content"><a class="title" href="/2022/04/22/MyBatis/" title="MyBatis">MyBatis</a><time datetime="2022-04-22T01:25:02.000Z" title="发表于 2022-04-22 09:25:02">2022-04-22</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://w.wallhaven.cc/full/72/wallhaven-7278dy.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2022 By Year 21</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">心之所向，皆可抵达</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat_btn" type="button" title="聊天"><i class="fas fa-sms"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">本地搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'FdeA2Fr167tRipdBpVUi0fvz-gzGzoHsz',
+      appKey: 'roCcb1ljCCFK13sNVcwK4VJi',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><div class="aplayer no-destroy" data-id="6712227171" data-server="netease" data-type="playlist" data-fixed="true" data-mini="true" data-listFolded="false" data-order="random" data-preload="none" data-autoplay="true" muted></div><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script>(function(d, w, c) {
+    w.ChatraID = 'Z2tPHYia3jhnSPJ3K';
+    var s = d.createElement('script');
+    w[c] = w[c] || function() {
+        (w[c].q = w[c].q || []).push(arguments);
+    };
+    s.async = true;
+    s.src = 'https://call.chatra.io/chatra.js';
+    if (d.head) d.head.appendChild(s);
+})(document, window, 'Chatra');
+
+if (true) {
+  var chatBtnFn = () => {
+    var chatBtn = document.getElementById("chat_btn")
+    chatBtn.addEventListener("click", function(){
+      Chatra('openChat')
+    });
+  }
+  chatBtnFn()
+} else {
+  if (true) {
+    function chatBtnHide () {
+      Chatra('hide')
+    }
+    function chatBtnShow () {
+      Chatra('show')
+    }
+  }
+}</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/no-pjax/"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  typeof preloader === 'object' && preloader.initLoading()
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+
+  typeof preloader === 'object' && preloader.endLoading()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
