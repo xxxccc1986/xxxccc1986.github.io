@@ -315,7 +315,7 @@ spring文件配置：
 
 #### Bean
 
-**此处的FactoryBean与最上面的BeanFactory并不一样，BeanFactory是一个接口，而FactoryBean是spring内置的工厂bean**
+**此处的FactoryBean与最上面的BeanFactory并不一样，FactoryBean是一个接口，而BeanFactory是spring内置的工厂bean**
 
 Spring 有两种类型 bean：
 
