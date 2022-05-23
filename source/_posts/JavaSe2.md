@@ -5,7 +5,7 @@ updated: 2022-02-23 15:42:02
 tags:
   - Java
 categories:
-  - Java
+  - JavaSE
 keywords: Java
 copyright_author: Year21
 copyright_url: http://year21.top/2022/02/23/JavaSe2

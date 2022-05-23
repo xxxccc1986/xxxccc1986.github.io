@@ -6,7 +6,7 @@ tags:
   - Annotation
 categories:
   - 框架
-keywords: Redis缓存
+keywords: SpringByAnnotation
 cover: https://w.wallhaven.cc/full/72/wallhaven-7278dy.jpg
 copyright_author: Year21
 copyright_url: http://year21.top/2022/05/09/SpringByAnotation

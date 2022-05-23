@@ -5,7 +5,7 @@ updated: 2022-04-03 21:47:30
 tags:
   - Exception
 categories:
-  - Java
+  - JavaSE
 cover: https://w.wallhaven.cc/full/e7/wallhaven-e7q8dr.jpg
 copyright_author: Year21
 copyright_url: http://year21.top/2022/04/03/Exception/

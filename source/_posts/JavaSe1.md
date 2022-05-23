@@ -5,7 +5,7 @@ update: 2022-02-22 23:11:01
 tags:
   - Java
 categories:
-  - Java
+  - JavaSE
 keyword: Java 
 top_img: https://s4.ax1x.com/2022/02/23/bpd5o8.jpg
 cover: https://w.wallhaven.cc/full/72/wallhaven-72m513.png

@@ -5,7 +5,7 @@ updated: 2022-02-24 16:14:30
 tags:
   - Java
 categories:
-  - Java
+  - JavaSE
 cover: https://w.wallhaven.cc/full/z8/wallhaven-z8odwg.jpg
 copyright_author: Year21
 copyright_url: http://year21.top/2022/02/24/Java环境安装/
