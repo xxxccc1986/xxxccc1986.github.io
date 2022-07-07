@@ -5,7 +5,7 @@ updated: 2022-03-15 17:25:30
 tags:
   - JDBC
 categories:
-  - JDBC
+  - DataBase
 keywords: JDBC
 cover: https://w.wallhaven.cc/full/z8/wallhaven-z86yxw.jpg
 copyright_author: Year21
