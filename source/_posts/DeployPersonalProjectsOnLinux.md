@@ -329,15 +329,15 @@ url: jdbc:mysql://localhost:3306/springboot_vue?characterEncoding=utf8&useSSL=fa
 
 ~~~tex
  远程mysql（linux，docker中）
-# 如果你需要使用远程登录，将localhost 改为 %，下面的‘chen’使用你自己的密码
+# 如果你需要使用远程登录，将localhost 改为 %，下面的‘xxxx’使用你自己的密码
 # 修改加密规则（非必须）
 alter user 'root'@'%' identified by 'chen' password expire never;
 # 更新用户的密码
-alter user 'root'@'%' identified with mysql_native_password by 'chen';
+alter user 'root'@'%' identified with mysql_native_password by 'xxxx';
 # 刷新权限
 flush privileges;
 # 重置密码（==非必须==）
-alter user 'root'@'%' identified by 'chen';
+alter user 'root'@'%' identified by 'xxxx';
 ~~~
 
 7.在linux上的<font color='red'>**docker中连接mysql发现表中的中文都是？**</font>问号显示，sqlyog的客户端则显示正常。
@@ -370,6 +370,18 @@ SET character_set_connection = utf8;
 说明： 一开始项目文件保存的位置是在项目工作的src目录下的，但是经过打包之后路径就变了 导致访问不到
 
 解决方法： ①找到打包后的项目路径	
+
+经后续排查得知：		
+
+```java
+ //获取项目在服务器上的绝对路径
+    //System.getProperty("user.dir")这个命令可以获取springboot_vue_demo在服务器上的绝对路径
+   //这里的地址很关键，别写错了 大坑属实
+ String  photoPath= System.getProperty("user.dir") + "/springboot/src/main/resources/static/img/" + filename;
+//保存到项目目录的静态资源如图片等，在经过mvn clean package 打包之后在生成的jar中的static目录下
+//具体访问路径如下 ：http://ip:端口号/目录/文件名
+// e.g. : http://localhost:9090/img/8aa5aad5-242d-476d-b526-b775a431bd6c.jpg
+```
 
 ​					②这里选择重新修改代码
 
@@ -458,3 +470,44 @@ public class FileController {
     }
 ~~~
 
+## 随便写点东西
+
+- **留给以后自己需要的时候可以看看**
+
+关于这个项目部署到服务器上的操作，可谓是挫折不断，主要是由于本身对linux系统这些也不是很精通，
+
+导致出现问题后解决花费的时间超乎想象，不过通过这个也算熟悉一下流程吧。
+
+关于部署这个管理系统尝试了两套部署方案，在努力之下终于都部署成功。
+
+**方案一：腾讯云的Centos7 + Docker + Mysql + Nginx + 通过前端和后端分别打包部署**
+
+上面通篇讲的就是这种部署的过程，就不再说明了。
+
+**方案二：Woiden的Centos7 + Docker + Mysql + Apache  通过前端和后端分别打包部署**
+
+这个方案是由于在woiden使用nginx发现80端口无法正常访问，尝试装过宝塔，提示有其他web环节存在，
+
+原因可能是woiden预装了apache，所以有冲突，因此只能被迫选择apache。
+
+粗略记录一下我的部署过程 ：
+
+由于apache的所有网站资源都存放在<font color='red'>/var/www/html</font>目录下，可以选择将dist打包后的文件统一放在这个文件目录下，
+
+再通过apache的httpd.conf文件修改网站的根目录。但我选择的是直接将dist打包好的文件放进html文件夹中，
+
+省去一部分环节，来节省一些时间，但是前端的部署中要解决一个非常重要的环节，
+
+就是如何解决在除了index的页面刷新报404错误问题，经过查阅资料，也最终解决。
+
+贴一下有帮助的资料连接 -->  [资料1](https://www.freesion.com/article/72721294265/)  |  [资料2](t.zoukankan.com/sxshaolong-p-10219527.html)  当时参考这个解决的 | [资料3](https://jingyan.baidu.com/article/ea24bc39adfbeb9b63b3314d.html)
+
+后端的部署和 方案一的部署是一样的，就不说了。至此，部署就完成了。
+
+---
+
+其实还有第三套方案想尝试部署的，直接将前端打包好的dist文件直接放入后端工程的static文件夹下，
+
+直接和整个后端一起部署。但是时间有限，这个项目的编写和部署花费了不少的时间，也许是我比较愚笨吧。
+
+很多事情还没有做，至于这方案三的部署可以留到以后再试试，希望有机会。

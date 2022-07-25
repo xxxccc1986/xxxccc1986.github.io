@@ -7,5 +7,3 @@ top_img: https://w.wallhaven.cc/full/72/wallhaven-727pl3.jpg
 
 
 ## 需要提交友链可以在下方留言
-
-也许不会有的

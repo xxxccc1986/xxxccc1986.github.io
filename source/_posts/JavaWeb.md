@@ -818,7 +818,7 @@ innerText 属性，表示获取/设置起始标签和结束标签中的文本
 Jquery是辅助js开发的js类库
 
 - 使用JQuery必须引进JQuery库
-- JQuery中的$是一个函数
+- $就是jQuery的别称,而jQuery就是jQuery库提供的一个函数，同时 $也是jQuery的一个对象.
 
 ### JQuery核心函数
 
