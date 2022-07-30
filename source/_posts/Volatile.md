@@ -10,9 +10,8 @@ copyright_author: Year21
 copyright_url: http://year21.top/2022/05/23/Volatile
 ---
 
-## Volatile
 
-### 现代计算机的内存模型
+# 现代计算机的内存模型
 
 实早期计算机中cpu和内存的速度是差不多的，但在现代计算机中，`cpu的指令速度远超内存的存取速度`，由于计算机的存储设备与处理器的运算速度有几个数量级的
 
@@ -26,7 +25,7 @@ copyright_url: http://year21.top/2022/05/23/Volatile
 
 ![内存模型](C:\Users\hcxs1986\AppData\Roaming\Typora\typora-user-images\image-20220426122833383.png)
 
-### JMM
+# JMM
 
 `Java内存模型(JavaMemoryModel)`描述了Java程序中各种变量(线程共享变量)的访问规则，以及在JVM中将变量，存储到内存和从内存中读取变量这样的底层细
 
@@ -36,7 +35,7 @@ copyright_url: http://year21.top/2022/05/23/Volatile
 
 ![两者的关系](https://s1.ax1x.com/2022/05/23/X903vt.png)
 
-### 数据的可见性
+# 数据的可见性
 
 数据的可见性：当一个数据出现变化后，其他地方获取的数据与修改后的数据保持一致。
 
@@ -56,7 +55,7 @@ copyright_url: http://year21.top/2022/05/23/Volatile
 
 因此也就保证了数据的可见性。
 
-### 禁止指令重排序
+# 禁止指令重排序
 
 在JMM的设定中会针对编译器制定volatile重排序规则：
 
@@ -67,7 +66,7 @@ copyright_url: http://year21.top/2022/05/23/Volatile
 
 ![读](https://s1.ax1x.com/2022/05/23/X90a5Q.png)
 
-### 单例模式双重检查
+# 单例模式双重检查
 
 使用volatile可以在单例模式中实现可见性和禁止指令重排序。
 
@@ -85,13 +84,13 @@ copyright_url: http://year21.top/2022/05/23/Volatile
 
 可见性得到保证是因为volatile修改的变量会让此变量在其他线程工作内存中的副本失效，必须重新读取主内存的值
 
-### 原子性问题
+# 原子性问题
 
 在对基本数据类型(除了long和double类型的)的读取和赋值的过程中都是原子性的，即不会有任何指令能插入。
 
 而volailte是修饰共享变量(类变量和全局变量)，因此是没有原子性的
 
-### volatile与synchronized的区别
+# volatile与synchronized的区别
 
 volatile只能修饰实例变量和类变量，而synchronized可以修饰方法，以及代码块。
 

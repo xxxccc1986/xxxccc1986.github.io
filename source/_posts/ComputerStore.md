@@ -14,7 +14,7 @@ copyright_author: Year21
 copyright_url: http://year21.top/2022/07/25/ComputerStore
 ---
 
-# 电脑商城
+##  前置介绍
 
 - 项目介绍：基于SpringBoot+Mybatis+BootStrap3.0前后端不分离的项目
 
@@ -4943,12 +4943,6 @@ function reFlashImg(imgId) {
     kaptcha.src = "http://localhost:8080/kaptcha/kaptcha-image?time="+ new Date();
 }   
 ~~~
-
-
-
-
-
-
 
 ---
 

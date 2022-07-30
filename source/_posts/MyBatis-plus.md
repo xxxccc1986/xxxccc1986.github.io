@@ -12,7 +12,7 @@ copyright_author: Year21
 copyright_url: http://year21.top/2022/07/07/MyBatis——plus
 ---
 
-## MyBatis-plus
+### 前置知识
 
 [MyBatis-plus](https://www.yuque.com/docs/share/0112fd84-de5f-433b-996a-b9d9cd87dd36?#%20%E3%80%8AMyBatisPlus(SpringBoot%E7%89%88)--2022%E3%80%8B)的框架结构
 

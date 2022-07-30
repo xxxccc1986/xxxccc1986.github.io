@@ -13,13 +13,13 @@ copyright_author: Year21
 copyright_url: http://year21.top/2022/07/07/ManagementSystem
 ---
 
-## 管理系统
+# 前置介绍
 
 项目介绍：前端采用Vue3.0 + element-plus，后端采用Springboot + MyBatis-plus的前后端分离项目
 
-### Vue前端
+# Vue前端
 
-#### 项目结构
+## 项目结构
 
 ![](https://s1.ax1x.com/2022/07/07/j0risx.png)
 
@@ -39,7 +39,7 @@ src ：
 
 ​	views：存储视图
 
-#### 第一个页面
+## 第一个页面
 
 页面主要由 头部导航栏 + 侧边菜单栏 + 主体展示内容组成 ，每个部分都是一个单独的vue组件
 
@@ -79,7 +79,7 @@ export default {
 
 ![第一个页面](https://s1.ax1x.com/2022/07/07/j0rFL6.png)
 
-#### 其他功能
+## 其他功能
 
 - 基于**旧页面**模块完成了**书籍管理、个人信息查看、注册页面、找回密码** 等其他页面
 
@@ -156,7 +156,7 @@ request.interceptors.request.use(config => {
 
 - <font color='red'>**剩下的就是一些小的功能啥的了，小项目也没啥好介绍的，随便写写**</font>
 
-### Springboot后端
+# Springboot后端
 
 1.使用spring Initialzr快速创建项目后 引入mybatis-puls的场景启动器，并注册拦截器以及分页插件
 
@@ -360,9 +360,9 @@ public class FileController {
 }
 ~~~
 
-### Demo问题总结
+# Demo问题总结
 
-#### 前端
+## 前端
 
 1.前端往后端传值是采用封装后的axios发起请求的
 
@@ -611,7 +611,7 @@ export default{
 
 ​								  						 ③最后在页面的template标签中进行使用 
 
-#### 后端
+## 后端
 
 1.后端接收前端传值
 

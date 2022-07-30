@@ -5,7 +5,7 @@ updated: 2022-04-28 10:48:02
 tags:
   - Redis
 categories:
-  - DataBase
+  - 中间件
 keywords: Redis缓存
 cover: https://s1.ax1x.com/2022/04/28/LOGwvj.jpg
 copyright_author: Year21
