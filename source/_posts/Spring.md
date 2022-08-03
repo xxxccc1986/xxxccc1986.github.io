@@ -1248,7 +1248,395 @@ public void testGenericApplicationContext() {
 
  ### SpringWebFlux
 
-前置知识：springMVC spirngboot java8新特性 maven
+1.SpringWebFlux的介绍
 
-- P53 日后填坑
+①在spring5版本中添加的新模块，功能与SpringMVC相似，都可用于WEB开发
+
+​	WebFlux使用的是一种当前比较流程响应式编程的框架
+
+②传统web框架，例如SpringMVC都是基于Servlet容器，而WebFlux是一种异步非阻塞的框架，
+
+​	这种<font color='red'>**异步非阻塞**</font>框架在Servlet3.1以后的版本才支持，核心是基于Reactor的相关API实现的
+
+- 所谓的异步和同步都是针对调用者来说的，如调用者发请求，同步则需等待请求的响应，
+
+  异步则发完请求不需要等待就可以去做其他事情了
+
+- 阻塞和非阻塞都是针对被调用者来说的，如被调用者收到请求后，非阻塞则代表马上做出响应后
+
+  再去处理对应请求，而阻塞则代表收到请求后，处理完成对应请求后再去做出响应
+
+③Webfiux特点
+
+Ⅰ.非阻塞式：在有限资源下，提高系统吞吐量和伸缩性
+
+Ⅱ.函数式编程：基于java8，可以使用Java8函数式编程方式实现路由请求
+
+④与SpringMVC的区别
+
+Ⅰ.两者都可以使用注解的方式，且都可以运行在Tomcat等容器中
+
+Ⅱ.SpringMVC采用的是命令式编程(即代码一行行的书写和执行)
+
+​	而WebFlux采用异步响应式编程
+
+
+
+![](https://s1.ax1x.com/2022/08/02/vE2NV0.png)
+
+2.响应式编程(Java实现)
+
+响应式编程是一种面向数据流和变化传播的编程范式。这意味着可以在编程语言中很方便
+
+地表达静态或动态的数据流，而相关的计算模型会自动将变化的值通过数据流进行传播。
+
+电子表格程序就是响应式编程的一个例子。单元格可以包含字面值或类似"=B1+C1"的公
+
+式，而包含公式的单元格的值会依据其他单元格的值的变化而变化。
+
+除此之外，也类似于Vue中动态绑定
+
+- Java8 及其之前版本 提供的观察者模式两个类 Observer 和 Observable
+
+~~~java
+//java8观察者模式的类实现响应式编程
+public class ObserverDemo extends Observable {
+    public static void main(String[] args) {
+        ObserverDemo observerDemo = new ObserverDemo();
+		
+        //添加观察者
+        //这里是addObserver的参数其实是个lambada表达式
+        //是这个public interface Observer {}函数式接口的实现
+        observerDemo.addObserver((o,arg) -> {
+            System.out.println("数据发送变化");
+        });
+        observerDemo.addObserver((o,arg) -> {
+            System.out.println("收到被观察者的通知，数据准备变化");
+        });
+
+        //表示数据发发生变化
+        observerDemo.setChanged();
+        //进行通知
+        observerDemo.notifyObservers();
+
+    }
+}
+~~~
+
+3.响应式编程(Reactor实现)
+
+①响应式编程操作中，Reactor是满Reactive规范框架
+
+②Reactor有两个核心类，Mono 和 Flux，这两个类实现接口Publisher，提供丰富操作符。
+
+Flux对象实现发布者，返回N个元素；Mono实现发布者，返回0或者1个元素
+
+③Flux 和 Mono 都是数据流的发布者，使用 Flux 和 Mono 都可以发出三种数据信号：
+
+元素值，错误信号，完成信号，错误信号和完成信号都代表终止信号，终止信号用于告诉
+
+订阅者数据流结束了，错误信号终止数据流同时把错误信息传递给订阅者
+
+④代码演示 Flux和Mono
+
+~~~java
+//这里是指通过Flux声明不同形式的数据流，可以后续让订阅者消费
+public class TestReactor {
+    public static void main(String[] args) {
+        //just方法直接声明相关元素
+        Flux.just(1,2,3,4);
+        Mono.just(1);
+		//其他方法
+        Integer[] array = {1, 2, 3, 4};
+        Flux.fromArray(array);
+
+        List<Integer> list = Arrays.asList(array);
+        Flux.fromIterable(list);
+
+        Stream<Integer> stream = list.stream();
+        Flux.fromStream(stream);
+    }
+}
+~~~
+
+⑤三种信号特点
+
+错误信号和完成信号都是终止信号，不能共存的
+
+如果没有发送任何元素值，而是直接发送错误或者完成信号，表示是空数据流
+
+如果没有错误信号，没有完成信号，表示是无限数据流
+
+⑥调用 just 或者其他方法只是声明数据流，数据流并没有发出，只有进行订阅之后才会触发
+
+​	数据流，不订阅什么都不会发生的
+
+~~~java
+//订阅数据流才会发布
+Flux.just(1,2,3,4).subscribe(System.out :: print);
+Mono.just(1).subscribe(System.out :: print);
+~~~
+
+⑦操作符
+
+对数据流进行一道道操作，成为操作符，比如工厂流水线
+
+第一 map 元素映射为新元素
+
+第二 flatMap 元素映射为流，把每个元素转换流，把转换之后多个流合并大的流
+
+4.SpringWebflux执行流程和核心API
+
+SpringWebflux 基于 Reactor，默认使用容器是 Netty，<font color='red'>**Netty 是高性能的 NIO框架**</font>，
+
+异步非阻塞的框架
+
+<font color='red'>**BIO是同步阻塞的**</font>
+
+![](https://s1.ax1x.com/2022/08/02/vE2UaV.png)
+
+<font color='red'>**NIO同步非阻塞**</font>
+
+![](https://s1.ax1x.com/2022/08/02/vE2wPU.png)
+
+2.SpringWebflux 执行过程和 SpringMVC 相似的
+
+①SpringWebflux 核心控制器 DispatchHandler，实现接口 WebHandler
+
+函数式接口 WebHandler 有一个方法
+
+~~~java
+public interface WebHandler {
+    Mono<Void> handle(ServerWebExchange exchange);
+}
+~~~
+
+- 函数式接口 WebHandler的实现类DispatcherHandler
+
+~~~java
+public Mono<Void> handle(ServerWebExchange exchange) { //有关Http请求的相关信息
+    if (this.handlerMappings == null) { //根据映射规则进行判断是否为空
+        return this.createNotFoundError(); //为空直接调用返回错误信息的方法
+    } else {
+        return CorsUtils.isPreFlightRequest(exchange.getRequest()) ? this.handlePreFlight(exchange) : Flux.fromIterable(this.handlerMappings).concatMap((mapping) -> {
+            return mapping.getHandler(exchange); //根据请求地址获取对应的handler，即控制器
+        }).next().switchIfEmpty(this.createNotFoundError()).flatMap((handler) -> {
+            return this.invokeHandler(exchange, handler);//执行对应的控制器方法
+        }).flatMap((result) -> {
+            return this.handleResult(exchange, result); //将处理结果返回
+        });
+    }
+}
+~~~
+
+②SpringWebflux 里面 DispatcherHandler，负责请求的处理(跟SpringMVC这一套差不多)
+
+HandlerMapping：请求查询到处理的方法
+
+HandlerAdapter：真正负责请求处理
+
+HandlerResultHandler：响应结果处理
+
+③SpringWebflux 实现函数式编程，两个接口：
+
+Ⅰ.RouterFunction（路由处理）：将请求转发到对应的控制器
+
+Ⅱ.HandlerFunction（处理函数）：执行控制器方法
+
+3.SpringWebflux（基于注解编程模型）
+
+①添加依赖
+
+~~~xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-webflux</artifactId>
+</dependency>
+~~~
+
+②创建entity层和实体类
+
+~~~java
+@lombok
+public class User {
+    private String name;
+    private String gender;
+    private Integer age;
+}
+~~~
+
+③创建service层和实现类
+
+~~~java
+public interface UserService {
+    //根据id查询用户
+    Mono<User> getUserById(Integer id);
+
+    //查询所有用户
+    Flux<User> getAllUser();
+
+    //添加用户
+    Mono<Void> addUser(Mono<User> user);
+}
+@Service
+public class UserServiceImpl implements UserService {
+    //创建map集合存储对象
+    Map<Integer,User> userMap = new HashMap<>();
+
+    public UserServiceImpl(){
+        this.userMap.put(1,new User("test1","男",21));
+        this.userMap.put(2,new User("test2","女",22));
+        this.userMap.put(3,new User("test3","男",23));
+    }
+
+    @Override
+    public Mono<User> getUserById(Integer id) {
+        return Mono.just(this.userMap.get(1));
+    }
+
+    @Override
+    public Flux<User> getAllUser() {
+        return Flux.fromIterable(this.userMap.values());
+    }
+
+    @Override
+    public Mono<Void> addUser(Mono<User> user) {
+        return user.doOnNext(person ->{
+            Integer id = userMap.size()+1;
+            userMap.put(id,person);
+            //thenEmpty()方法形参必须填入Mono.empty()以发生终止信号结束数据流
+        }).thenEmpty(Mono.empty());
+    }
+}
+~~~
+
+④创建Controller层
+
+~~~java
+@RestController
+@RequestMapping("/user")
+public class UserController {
+    @Autowired
+    private UserService userService;
+
+    //查询单个用户
+    @GetMapping("/query/{id}")
+    public Mono<User> queryUserById(@PathVariable("id") Integer id){
+        return userService.getUserById(id);
+    }
+
+    //查询所有用户
+    @GetMapping("/queryAll")
+    public Flux<User> queryAllUser(){
+        return userService.getAllUser();
+    }
+
+    //添加用户
+    @PostMapping("/add")
+    public Mono<Void> addUser(User user){
+        Mono<User> userMono = Mono.just(user);
+        return userService.addUser(userMono);
+    }
+}
+~~~
+
+- 总结
+
+<font color='red'>**SpringMVC 方式实现，同步阻塞的方式，基于 SpringMVC+Servlet+Tomcat**</font>
+
+<font color='red'>**SpringWebflux 方式实现，异步非阻塞 方式，基于 SpringWebflux+Reactor+Netty**</font>
+
+4.SpringWebflux（基于函数式编程模型）
+
+①在使用函数式编程模型操作时候，需要自己初始化服务器
+
+②基于函数式编程模型时候，有两个核心接口：RouterFunction（实现路由功能，请求转发
+
+给对应的 handler）和 HandlerFunction（处理请求生成响应的函数）。核心任务定义两个函数
+
+式接口的实现并且启动需要的服务器。
+
+③ SpringWebflux 请 求 和 响 应 不 再 是 ServletRequest 和 ServletResponse ，而是
+
+ServerRequest 和 ServerResponse
+
+![](https://s1.ax1x.com/2022/08/02/vE2B24.png)
+
+- 创建handler并完成具体操作
+
+~~~java
+//HandlerFunction
+public class UserHandler {
+    private final UserService userService;
+
+    public UserHandler(UserService userService){
+        this.userService = userService;
+    }
+    //根据id查询
+    public Mono<ServerResponse> queryById(ServerRequest serverRequest){
+        //从请求路径中获取参数
+        Integer id = Integer.valueOf(serverRequest.pathVariable("id"));
+        //空值处理
+        Mono<ServerResponse> notFound = ServerResponse.notFound().build();
+        //调用service获取数据
+        Mono<User> user = userService.getUserById(id);
+        //把user对象转换为ServerResponse返回
+        //使用Reactor操作符flatMap操作
+        return
+                user.flatMap(person -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(person)
+                        .switchIfEmpty(notFound));
+
+    }
+    //查询所有
+    public Mono<ServerResponse> queryAll(ServerRequest serverRequest){
+        //调用service获取数据
+        Flux<User> users = userService.getAllUser();
+        return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(users,User.class);
+    }
+    //添加用户
+    public Mono<ServerResponse> addUser(ServerRequest serverRequest){
+        //从请求路径中获取参数
+        Mono<User> userMono = serverRequest.bodyToMono(User.class);
+        return ServerResponse.ok().build(userService.addUser(userMono));
+    }
+}
+~~~
+
+- 创建server完成router、适配器和服务器的设置
+
+~~~java
+//RouterFunction
+public class Server {
+    //最终调用
+    public static void main(String[] args) throws IOException {
+        Server server = new Server();
+        server.createReactorServer();
+        System.out.println("方法已执行完毕！正在退出");
+        System.in.read();
+    }
+
+    //1.创建Router路由
+    public RouterFunction<ServerResponse> routingFunction(){
+        //创建handler对象
+        UserService userService = new UserServiceImpl();
+        UserHandler userHandler = new UserHandler(userService);
+        //2.设置路由的请求路径、接收数据的类型以及需要调用的方法
+        return RouterFunctions.route(
+                GET("/users/{id}").and(accept(APPLICATION_JSON)),userHandler::queryById)
+                .andRoute(GET("/users").and(accept(APPLICATION_JSON)),userHandler::queryAll);
+    }
+
+    //3.创建服务器完成适配
+    public void createReactorServer(){
+        //路由和handler适配
+        RouterFunction<ServerResponse> routerFunction = routingFunction();
+        HttpHandler httpHandler = toHttpHandler(routerFunction);
+        ReactorHttpHandlerAdapter adapter = new ReactorHttpHandlerAdapter(httpHandler);
+        //创建服务器
+        HttpServer httpServer = HttpServer.create();
+        httpServer.handle(adapter).bindNow();
+    }
+}
+~~~
 

@@ -7,7 +7,7 @@ tags:
   - SpringMVC
   - MyBatis
 categories:
-  - 框架
+  - 个人项目
 keywords: SSM-CRUD整合
 cover: https://w.wallhaven.cc/full/o3/wallhaven-o3mp39.jpg
 copyright_author: Year21
