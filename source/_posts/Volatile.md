@@ -3,7 +3,7 @@ title: Volatile关键字
 date: 2022-05-23 23:07:02
 updated: 2022-05-23 23:07:02
 categories:
-  - JavaSE
+  - 其他
 keywords: Volatile
 cover: https://w.wallhaven.cc/full/z8/wallhaven-z8751j.jpg
 copyright_author: Year21
@@ -23,7 +23,7 @@ copyright_url: http://year21.top/2022/05/23/Volatile
 
 在多处理器系统中，每个处理器都有自己的高速缓存，而它们又共享同一主内存（MainMemory）。
 
-![内存模型](C:\Users\hcxs1986\AppData\Roaming\Typora\typora-user-images\image-20220426122833383.png)
+![内存模型](https://s1.ax1x.com/2022/08/06/vuoiE8.png)
 
 # JMM
 
@@ -88,7 +88,7 @@ copyright_url: http://year21.top/2022/05/23/Volatile
 
 在对基本数据类型(除了long和double类型的)的读取和赋值的过程中都是原子性的，即不会有任何指令能插入。
 
-而volailte是修饰共享变量(类变量和全局变量)，因此是没有原子性的
+而volailte是修饰共享变量(实例变量和类变量)，因此是没有原子性的
 
 # volatile与synchronized的区别
 
