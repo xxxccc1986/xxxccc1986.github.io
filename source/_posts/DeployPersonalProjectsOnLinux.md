@@ -1,5 +1,5 @@
 ---
-title: 如何在Linux上部署个人项目？
+title: 如何在Linux上部署SpringBoot项目？
 date: 2022-07-07 23:56:30
 updated: 2022-07-07 23:56:30
 tags:
@@ -12,8 +12,6 @@ cover: https://w.wallhaven.cc/full/d5/wallhaven-d59deo.png
 copyright_author: Year21
 copyright_url: http://year21.top/2022/07/07/DeployPersonalProjectsOnLinux
 ---
-
-
 
 ## 部署前的准备工作
 
